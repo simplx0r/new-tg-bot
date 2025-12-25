@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  telegram-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: telegram-joke-bot:latest
+    container_name: telegram-joke-bot
+    restart: unless-stopped
+
+    # Environment variables
+    env_file:
+      - .env
+
+    # Environment variables override (optional)
+    environment:
+      - NODE_ENV=production
+
+    # Volume for persistent database storage
+    volumes:
+      - bot-data:/app/data
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits (optional, adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+volumes:
+  bot-data:
+    driver: local
+    name: telegram-bot-data
+
+networks:
+  default:
+    name: telegram-bot-network
