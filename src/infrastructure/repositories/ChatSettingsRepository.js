@@ -10,7 +10,7 @@ export class ChatSettingsRepository {
     let row = stmt.get(chatId);
 
     if (!row) {
-      const insertStmt = this.db.statements.get('INSERT');
+      const insertStmt = this.db.statements.get('CHAT_SETTINGS_INSERT');
       insertStmt.run(chatId);
       row = stmt.get(chatId);
     }
@@ -26,7 +26,7 @@ export class ChatSettingsRepository {
   }
 
   async update(chatId, settings) {
-    const stmt = this.db.statements.get('UPDATE');
+    const stmt = this.db.statements.get('CHAT_SETTINGS_UPDATE');
     stmt.run(
       settings.jokesEnabled !== undefined ? (settings.jokesEnabled ? 1 : 0) : null,
       settings.jokesInterval || null,

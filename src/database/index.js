@@ -173,7 +173,7 @@ class DatabaseManager {
     let settings = stmt.get(chatId);
 
     if (!settings) {
-      const insertStmt = this.statements.get('INSERT');
+      const insertStmt = this.statements.get('CHAT_SETTINGS_INSERT');
       insertStmt.run(chatId);
       settings = stmt.get(chatId);
     }
@@ -182,7 +182,7 @@ class DatabaseManager {
   }
 
   updateChatSettings(chatId, settings) {
-    const stmt = this.statements.get('UPDATE');
+    const stmt = this.statements.get('CHAT_SETTINGS_UPDATE');
     let jokesEnabledValue = null;
     if (settings.jokesEnabled !== null) {
       jokesEnabledValue = settings.jokesEnabled ? 1 : 0;

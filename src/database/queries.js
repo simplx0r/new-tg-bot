@@ -185,14 +185,14 @@ export const CHAT_SETTINGS_QUERIES = {
     )
   `,
 
-  INSERT: `
+  CHAT_SETTINGS_INSERT: `
     INSERT INTO chat_settings (chat_id)
     VALUES (?)
   `,
 
   SELECT_BY_CHAT_ID: 'SELECT * FROM chat_settings WHERE chat_id = ?',
 
-  UPDATE: `
+  CHAT_SETTINGS_UPDATE: `
     UPDATE chat_settings
     SET jokes_enabled = COALESCE(?, jokes_enabled),
         jokes_interval = COALESCE(?, jokes_interval),
