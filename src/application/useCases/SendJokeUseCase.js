@@ -5,7 +5,7 @@ export class SendJokeUseCase {
     this.eventDispatcher = eventDispatcher;
   }
 
-  async execute(chatId, category = null) {
+  async execute(chatId, category = null, threadId = null) {
     const joke = await this.jokeRepository.getRandom();
 
     if (!joke) {
@@ -17,7 +17,7 @@ export class SendJokeUseCase {
 
     await this.eventDispatcher.dispatch({
       name: 'joke.sent',
-      payload: { joke, chatId },
+      payload: { joke, chatId, threadId },
     });
 
     return joke;

@@ -1,4 +1,5 @@
 import { COMMANDS } from '../constants/index.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
 
 export function setupStatsCommand(bot, statsService) {
   // Команда /stats
@@ -9,7 +10,7 @@ export function setupStatsCommand(bot, statsService) {
     const userStats = statsService.getUserStats(userId, chatId);
     const message = statsService.formatUserStats(userStats);
 
-    bot.sendMessage(chatId, message);
+    safeSendMessage(bot, chatId, message);
   });
 }
 
@@ -22,7 +23,7 @@ export function setupTopCommand(bot, statsService) {
     const topUsers = statsService.getTopUsers(chatId, limit);
     const message = statsService.formatTopUsers(topUsers);
 
-    bot.sendMessage(chatId, message);
+    safeSendMessage(bot, chatId, message);
   });
 }
 
@@ -34,7 +35,7 @@ export function setupAllStatsCommand(bot, statsService) {
     const allStats = statsService.getAllChatStats(chatId);
     const message = statsService.formatAllStats(allStats);
 
-    bot.sendMessage(chatId, message);
+    safeSendMessage(bot, chatId, message);
   });
 }
 
@@ -44,6 +45,6 @@ export function setupSummaryCommand(bot, statsService) {
     const chatId = msg.chat.id;
 
     const message = statsService.formatChatSummary(chatId);
-    bot.sendMessage(chatId, message);
+    safeSendMessage(bot, chatId, message);
   });
 }

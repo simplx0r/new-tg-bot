@@ -1,4 +1,5 @@
 import { REACTION_TYPES } from '../constants/index.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
 
 class ReactionService {
   constructor(reactionRepository) {
@@ -21,23 +22,23 @@ class ReactionService {
     return this.reactionRepository.getRandomReaction();
   }
 
-  sendReaction(bot, chatId, reaction) {
+  sendReaction(bot, chatId, reaction, options = {}) {
     if (!reaction) {
       return null;
     }
 
     if (reaction.reaction_type === REACTION_TYPES.STICKER) {
-      return bot.sendSticker(chatId, reaction.reaction_content);
+      return bot.sendSticker(chatId, reaction.reaction_content, options);
     } else if (reaction.reaction_type === REACTION_TYPES.MESSAGE) {
-      return bot.sendMessage(chatId, reaction.reaction_content);
+      return safeSendMessage(bot, chatId, reaction.reaction_content, options);
     }
 
     return null;
   }
 
-  sendRandomReaction(bot, chatId) {
+  sendRandomReaction(bot, chatId, options = {}) {
     const reaction = this.getRandomReaction();
-    return this.sendReaction(bot, chatId, reaction);
+    return this.sendReaction(bot, chatId, reaction, options);
   }
 
   findReactionByTrigger(text) {
@@ -45,10 +46,10 @@ class ReactionService {
     return allReactions.find((r) => text.toLowerCase().includes(r.trigger_text.toLowerCase()));
   }
 
-  sendReactionByTrigger(bot, chatId, text) {
+  sendReactionByTrigger(bot, chatId, text, options = {}) {
     const reaction = this.findReactionByTrigger(text);
     if (reaction) {
-      return this.sendReaction(bot, chatId, reaction);
+      return this.sendReaction(bot, chatId, reaction, options);
     }
     return null;
   }

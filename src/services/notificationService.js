@@ -1,5 +1,6 @@
 import { EMOJI } from '../constants/index.js';
 import { createBoldText, createSpoilerText } from '../utils/formatters.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
 
 class NotificationService {
   constructor(db) {
@@ -17,11 +18,13 @@ class NotificationService {
   async sendNotification(bot, chatId, message, sentBy, useSpoiler = false) {
     const content = useSpoiler ? createSpoilerText(message) : message;
 
-    const sentMessage = await bot.sendMessage(chatId, content, {
+    const sentMessage = await safeSendMessage(bot, chatId, content, {
       parseMode: 'HTML',
     });
 
-    this.recordNotification(chatId, message, sentBy);
+    if (sentMessage) {
+      this.recordNotification(chatId, message, sentBy);
+    }
 
     return sentMessage;
   }
@@ -31,11 +34,13 @@ class NotificationService {
     const header = `${EMOJI.BELL} ${createBoldText('Важное уведомление')}\n\n`;
     const fullMessage = header + content;
 
-    const sentMessage = await bot.sendMessage(chatId, fullMessage, {
+    const sentMessage = await safeSendMessage(bot, chatId, fullMessage, {
       parseMode: 'HTML',
     });
 
-    this.recordNotification(chatId, message, sentBy);
+    if (sentMessage) {
+      this.recordNotification(chatId, message, sentBy);
+    }
 
     return sentMessage;
   }

@@ -1,4 +1,16 @@
-import { setupStartCommand } from './startCommand.js';
+import {
+  MiddlewarePresets,
+  adminOnlyMiddleware,
+} from '../infrastructure/middleware/Middleware.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
+import {
+  setupAddAdminCommand,
+  setupAdminsCommand,
+  setupJokesOffCommand,
+  setupJokesOnCommand,
+  setupRemoveAdminCommand,
+  setupSetIntervalCommand
+} from './adminCommands.js';
 import { setupHelpCommand } from './helpCommand.js';
 import {
   setupAddJokeCommand,
@@ -6,29 +18,18 @@ import {
   setupJokeStatsCommand,
   setupJokesCommand,
 } from './jokeCommands.js';
+import { setupNotifyCommand } from './notificationCommands.js';
+import {
+  setupRankCommand,
+  setupRanksCommand,
+} from './rankCommands.js';
+import { setupStartCommand } from './startCommand.js';
 import {
   setupAllStatsCommand,
   setupStatsCommand,
   setupSummaryCommand,
   setupTopCommand,
 } from './statsCommands.js';
-import {
-  setupRankCommand,
-  setupRanksCommand,
-} from './rankCommands.js';
-import {
-  setupAddAdminCommand,
-  setupAdminsCommand,
-  setupJokesOffCommand,
-  setupJokesOnCommand,
-  setupRemoveAdminCommand,
-  setupSetIntervalCommand,
-} from './adminCommands.js';
-import { setupNotifyCommand } from './notificationCommands.js';
-import {
-  MiddlewarePresets,
-  adminOnlyMiddleware,
-} from '../infrastructure/middleware/Middleware.js';
 
 class Commands {
   constructor(bot, db, jokeService, statsService, rankService, notificationService, userRepository) {
@@ -106,7 +107,7 @@ class Commands {
 
         // Если middleware установил ответ, отправляем его
         if (ctx.reply && ctx.bot) {
-          await ctx.bot.sendMessage(ctx.message.chat.id, ctx.reply.text);
+          await safeSendMessage(ctx.bot, ctx.message.chat.id, ctx.reply.text);
         }
       };
 

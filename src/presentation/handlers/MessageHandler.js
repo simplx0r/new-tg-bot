@@ -1,4 +1,5 @@
 import { MiddlewarePresets } from '../../infrastructure/middleware/Middleware.js';
+import { safeSendMessage, getTopicId } from '../../utils/telegramHelpers.js';
 
 export class MessageHandler {
   constructor(recordMessageUseCase, calculateRankUseCase, reactionService, userRepository) {
@@ -31,7 +32,9 @@ export class MessageHandler {
 
       // Если middleware установил ответ, отправляем его
       if (ctx.reply && ctx.bot) {
-        await ctx.bot.sendMessage(ctx.message.chat.id, ctx.reply.text);
+        const threadId = getTopicId(ctx.message);
+        const options = threadId ? { message_thread_id: threadId } : {};
+        await safeSendMessage(ctx.bot, ctx.message.chat.id, ctx.reply.text, options);
       }
     };
 
@@ -45,16 +48,18 @@ export class MessageHandler {
    */
   async processMessage(context) {
     const { message, bot } = context;
+    const threadId = getTopicId(message);
 
     // Record message
     const { user, stats } = await this.recordMessageUseCase.execute(message.from, message.chat.id);
 
     // Calculate and check rank
-    await this.calculateRankUseCase.execute(user.id, message.chat.id, stats.messageCount);
+    await this.calculateRankUseCase.execute(user.id, message.chat.id, stats.messageCount, threadId);
 
     // Send reaction
     if (message.chat.type === 'group' || message.chat.type === 'supergroup') {
-      await this.reactionService.sendRandomReaction(bot, message.chat.id);
+      const options = threadId ? { message_thread_id: threadId } : {};
+      await this.reactionService.sendRandomReaction(bot, message.chat.id, options);
     }
   }
 }

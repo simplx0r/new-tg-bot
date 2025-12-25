@@ -1,6 +1,7 @@
 import { EMOJI } from '../constants/index.js';
 import { getJokeByCategory, getRandomJoke } from '../data/jokes.js';
 import { formatJokeStats, formatJokesList } from '../utils/formatters.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
 
 class JokeService {
   constructor(db) {
@@ -20,20 +21,20 @@ class JokeService {
     this.db.incrementJokeUsage(jokeId);
     this.db.recordJokeHistory(jokeId, chatId);
 
-    return bot.sendMessage(chatId, `${EMOJI.LAUGH} ${joke.content}`);
+    return safeSendMessage(bot, chatId, `${EMOJI.LAUGH} ${joke.content}`);
   }
 
   sendRandomJokeFromDB(bot, chatId) {
     const joke = this.db.getRandomJoke();
 
     if (!joke) {
-      return bot.sendMessage(chatId, `${EMOJI.EYE} В базе пока нет шуток. Добавьте их командой /addjoke`);
+      return safeSendMessage(bot, chatId, `${EMOJI.EYE} В базе пока нет шуток. Добавьте их командой /addjoke`);
     }
 
     this.db.incrementJokeUsage(joke.id);
     this.db.recordJokeHistory(joke.id, chatId);
 
-    return bot.sendMessage(chatId, `${EMOJI.LAUGH} ${joke.content}`);
+    return safeSendMessage(bot, chatId, `${EMOJI.LAUGH} ${joke.content}`);
   }
 
   addCustomJoke(content, category = 'general') {

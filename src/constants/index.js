@@ -18,6 +18,7 @@ export const COMMANDS = {
   RANK: '/rank',
   RANKS: '/ranks',
   NOTIFY: '/notify',
+  TOPICS: '/topics',
 };
 
 export const JOKE_CATEGORIES = {

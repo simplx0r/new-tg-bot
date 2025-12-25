@@ -11,6 +11,7 @@ const config = {
   telegram: {
     token: process.env.TELEGRAM_BOT_TOKEN,
     adminChatId: process.env.ADMIN_CHAT_ID,
+    defaultTopicId: process.env.DEFAULT_TOPIC_ID ? Number(process.env.DEFAULT_TOPIC_ID) : null,
   },
   joke: {
     intervalMinutes: Number(process.env.JOKE_INTERVAL_MINUTES || '30'),

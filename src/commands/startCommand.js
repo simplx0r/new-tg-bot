@@ -1,4 +1,5 @@
 import { COMMANDS, EMOJI } from '../constants/index.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
 
 export function setupStartCommand(bot) {
   bot.onText(new RegExp(`^${COMMANDS.START}$`), (msg) => {
@@ -28,6 +29,6 @@ ${EMOJI.BELL} /notify <текст> — уведомление всех
 
 ${EMOJI.BOOK} /help — справка`;
 
-    bot.sendMessage(chatId, message);
+    safeSendMessage(bot, chatId, message);
   });
 }

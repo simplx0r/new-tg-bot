@@ -1,4 +1,5 @@
 import { COMMANDS } from '../constants/index.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
 
 export function setupRankCommand(bot, db, statsService, rankService) {
   // Команда /rank
@@ -9,7 +10,7 @@ export function setupRankCommand(bot, db, statsService, rankService) {
     const userStats = statsService.getUserStats(userId, chatId);
     const message = rankService.formatUserRank(userStats);
 
-    bot.sendMessage(chatId, message);
+    safeSendMessage(bot, chatId, message);
   });
 }
 
@@ -19,6 +20,6 @@ export function setupRanksCommand(bot, rankService) {
     const chatId = msg.chat.id;
     const message = rankService.formatRanksByCategory();
 
-    bot.sendMessage(chatId, message);
+    safeSendMessage(bot, chatId, message);
   });
 }

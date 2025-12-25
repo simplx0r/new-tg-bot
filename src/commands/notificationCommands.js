@@ -1,4 +1,5 @@
 import { EMOJI } from '../constants/index.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
 
 export function setupNotifyCommand(bot, db, notificationService) {
   // Команда /notify (только для админов)
@@ -7,14 +8,14 @@ export function setupNotifyCommand(bot, db, notificationService) {
     const userId = msg.from.id;
 
     if (!db.isAdmin(userId)) {
-      bot.sendMessage(chatId, `${EMOJI.CROSS} Эта команда доступна только админам`);
+      safeSendMessage(bot, chatId, `${EMOJI.CROSS} Эта команда доступна только админам`);
       return;
     }
 
     const messageText = match[1].trim();
 
     if (!messageText) {
-      bot.sendMessage(chatId, `${EMOJI.CROSS} Укажите текст уведомления`);
+      safeSendMessage(bot, chatId, `${EMOJI.CROSS} Укажите текст уведомления`);
       return;
     }
 

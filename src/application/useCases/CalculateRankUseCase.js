@@ -5,7 +5,7 @@ export class CalculateRankUseCase {
     this.eventDispatcher = eventDispatcher;
   }
 
-  async execute(userId, chatId, messageCount) {
+  async execute(userId, chatId, messageCount, threadId = null) {
     const allRanks = await this.rankRepository.getAll();
     const currentRank = await this.userRankRepository.getByUser(userId);
 
@@ -23,7 +23,7 @@ export class CalculateRankUseCase {
 
       await this.eventDispatcher.dispatch({
         name: 'rank.earned',
-        payload: { userId, rank: bestRank, chatId },
+        payload: { userId, rank: bestRank, chatId, threadId },
       });
     }
 

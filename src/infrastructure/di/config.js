@@ -16,6 +16,7 @@ import { ReactionRepository } from '../repositories/ReactionRepository.js';
 import { StatsRepository } from '../repositories/StatsRepository.js';
 import { UserRepository } from '../repositories/UserRepository.js';
 import { UserRankRepository } from '../repositories/UserRankRepository.js';
+import { MessageHandler } from '../../presentation/handlers/MessageHandler.js';
 import ReactionService from '../../services/reactionService.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -122,7 +123,17 @@ export function configureContainer(container, config) {
     return new CalculateRankUseCase(
       container.get('rankRepository'),
       container.get('userRankRepository'),
-      container.get('eventDispatcher')
+      container.get('eventDispatcher'),
+    );
+  });
+
+  container.register('messageHandler', (container) => {
+    return new MessageHandler(
+      container.get('recordMessageUseCase'),
+      container.get('calculateRankUseCase'),
+      container.get('reactionService'),
+      container.get('userRepository'),
+      container.get('config').telegram.defaultTopicId,
     );
   });
 }

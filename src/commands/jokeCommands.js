@@ -1,4 +1,5 @@
 import { COMMANDS, EMOJI } from '../constants/index.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
 
 export function setupJokeCommands(bot, jokeService) {
   // Команда /joke
@@ -17,14 +18,14 @@ export function setupAddJokeCommand(bot, db, jokeService) {
     const userId = msg.from.id;
 
     if (!db.isAdmin(userId)) {
-      bot.sendMessage(chatId, `${EMOJI.CROSS} Эта команда доступна только админам`);
+      safeSendMessage(bot, chatId, `${EMOJI.CROSS} Эта команда доступна только админам`);
       return;
     }
 
     const jokeText = match[1].trim();
     jokeService.addCustomJoke(jokeText);
 
-    bot.sendMessage(chatId, `${EMOJI.CHECK} Шутка добавлена в базу!`);
+    safeSendMessage(bot, chatId, `${EMOJI.CHECK} Шутка добавлена в базу!`);
   });
 }
 
@@ -35,14 +36,14 @@ export function setupJokesCommand(bot, db, jokeService) {
     const userId = msg.from.id;
 
     if (!db.isAdmin(userId)) {
-      bot.sendMessage(chatId, `${EMOJI.CROSS} Эта команда доступна только админам`);
+      safeSendMessage(bot, chatId, `${EMOJI.CROSS} Эта команда доступна только админам`);
       return;
     }
 
     const jokes = jokeService.getAllJokes();
     const message = jokeService.formatJokesList(jokes);
 
-    bot.sendMessage(chatId, message);
+    safeSendMessage(bot, chatId, message);
   });
 }
 
@@ -53,13 +54,13 @@ export function setupJokeStatsCommand(bot, db, jokeService) {
     const userId = msg.from.id;
 
     if (!db.isAdmin(userId)) {
-      bot.sendMessage(chatId, `${EMOJI.CROSS} Эта команда доступна только админам`);
+      safeSendMessage(bot, chatId, `${EMOJI.CROSS} Эта команда доступна только админам`);
       return;
     }
 
     const stats = jokeService.getJokeStats();
     const message = jokeService.formatJokeStats(stats);
 
-    bot.sendMessage(chatId, message);
+    safeSendMessage(bot, chatId, message);
   });
 }

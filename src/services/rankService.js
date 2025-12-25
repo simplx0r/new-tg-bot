@@ -1,5 +1,6 @@
 import { EMOJI, RANK_CATEGORIES } from '../constants/index.js';
 import { formatRanksList, formatUserName } from '../utils/formatters.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
 
 class RankService {
   constructor(db) {
@@ -76,7 +77,7 @@ class RankService {
         + `Вы получили новое звание: ${newRank.name}!\n`
         + `${newRank.description || ''}`;
 
-      return bot.sendMessage(chatId, message);
+      return safeSendMessage(bot, chatId, message);
     }
 
     return null;

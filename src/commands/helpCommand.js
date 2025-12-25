@@ -1,4 +1,5 @@
 import { COMMANDS, EMOJI, JOKE_CATEGORIES } from '../constants/index.js';
+import { safeSendMessage } from '../utils/telegramHelpers.js';
 
 export function setupHelpCommand(bot) {
   bot.onText(new RegExp(`^${COMMANDS.HELP}$`), (msg) => {
@@ -36,6 +37,6 @@ ${EMOJI.BELL} Уведомления:
 
 ${EMOJI.BULB} Подсказка: Для получения user_id можно использовать бота @userinfobot`;
 
-    bot.sendMessage(chatId, message);
+    safeSendMessage(bot, chatId, message);
   });
 }
