@@ -28,7 +28,7 @@ COPY --from=builder /app/src ./src
 COPY --from=builder /app/data ./data
 
 # Create non-root user for security
-RUN addgroup -S nodejs && adduser -S -D -H -u 1000 -G nodejs botuser
+RUN addgroup -S nodejs && adduser -S -D -H -u 1001 -G nodejs botuser
 
 # Change ownership of app directory
 RUN chown -R botuser:nodejs /app
