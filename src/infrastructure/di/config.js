@@ -12,6 +12,10 @@ import * as queries from '../../database/queries.js';
 import { EventDispatcher } from '../../domain/events/EventDispatcher.js';
 import { MessageHandler } from '../../presentation/handlers/MessageHandler.js';
 import ReactionService from '../../services/reactionService.js';
+import JokeService from '../../services/jokeService.js';
+import RankService from '../../services/rankService.js';
+import NotificationService from '../../services/notificationService.js';
+import StatsService from '../../services/statsService.js';
 import { CacheService } from '../cache/CacheService.js';
 import { ErrorHandler } from '../errorHandling/ErrorHandler.js';
 import { MetricsCollector } from '../monitoring/MetricsCollector.js';
@@ -143,6 +147,14 @@ export function configureContainer(container, config) {
 
   // Services (transient)
   container.registerTransient('reactionService', (container) => new ReactionService(container.get('reactionRepository')));
+
+  container.registerTransient('jokeService', (container) => new JokeService(container.get('jokeRepository')));
+
+  container.registerTransient('rankService', (container) => new RankService(container.get('rankRepository'), container.get('userRankRepository')));
+
+  container.registerTransient('notificationService', (container) => new NotificationService(container.get('db')));
+
+  container.registerTransient('statsService', (container) => new StatsService(container.get('statsRepository'), container.get('userRepository')));
 
   // Use Cases (transient)
   container.registerTransient('recordMessageUseCase', (container) => new RecordMessageUseCase(

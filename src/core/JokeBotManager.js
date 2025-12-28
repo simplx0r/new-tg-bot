@@ -2,6 +2,7 @@ import { EMOJI } from '../constants/index.js';
 import { JokeSentEvent, MessageRecordedEvent, RankEarnedEvent } from '../domain/events/TypedEvent.js';
 import { logger } from '../infrastructure/logging/Logger.js';
 import { getTopicId } from '../utils/telegramHelpers.js';
+import Commands from '../commands/index.js';
 
 /**
  * Менеджер жизненного цикла бота
@@ -27,6 +28,9 @@ export class JokeBotManager {
     // Хранилище состояния
     this.chatThreads = new Map(); // Храним threadId для каждого чата
     this.activeAutoJokes = new Map(); // Активные авто-шутки по chatId
+
+    // Инициализируем команды (но не регистрируем их, пока бот не запущен)
+    this.commands = null;
   }
 
   /**
@@ -49,6 +53,9 @@ export class JokeBotManager {
 
       // Настраиваем обработчики Telegram
       this._setupTelegramHandlers();
+
+      // Настраиваем команды
+      this._setupCommands();
 
       // Запускаем планировщик
       this.scheduler.start();
@@ -184,6 +191,23 @@ export class JokeBotManager {
     this.telegramAdapter.on('error', async (error) => {
       await this.errorHandler.handle(error, { context: 'telegram' });
     });
+  }
+
+  /**
+   * Настроить команды бота
+   * @private
+   */
+  _setupCommands() {
+    const db = this.container.get('db');
+    const jokeService = this.container.get('jokeService');
+    const statsService = this.container.get('statsService');
+    const rankService = this.container.get('rankService');
+    const notificationService = this.container.get('notificationService');
+    const userRepository = this.container.get('userRepository');
+    const bot = this.telegramAdapter.getBotInstance();
+
+    this.commands = new Commands(bot, db, jokeService, statsService, rankService, notificationService, userRepository);
+    logger.info('📝 Bot commands registered');
   }
 
   /**
