@@ -38,3 +38,6 @@ coverage
 # Build artifacts
 dist
 build
+
+# Explicitly include src/data (in case of any ignore patterns)
+!src/data/
