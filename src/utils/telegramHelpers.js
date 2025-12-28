@@ -3,6 +3,23 @@
  */
 
 /**
+ * Безопасная отправка сообщения с обработкой ошибок
+ * @param {Object} bot - Telegram bot instance
+ * @param {number|string} chatId - ID чата
+ * @param {string} text - Текст сообщения
+ * @param {Object} options - Дополнительные опции
+ * @returns {Promise<Object|null>} - Результат отправки или null при ошибке
+ */
+export async function safeSendMessage(bot, chatId, text, options = {}) {
+  try {
+    return await bot.sendMessage(chatId, text, options);
+  } catch (error) {
+    console.error('Ошибка отправки сообщения:', error);
+    return null;
+  }
+}
+
+/**
  * Получить ID топика из сообщения
  * @param {Object} message - Объект сообщения от Telegram
  * @returns {number|null} - ID топика или null, если это не топик
