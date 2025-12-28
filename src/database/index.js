@@ -58,21 +58,22 @@ class DatabaseManager {
     }
 
     const agencyRanks = [
-      { name: 'Новичок', category: 'agency', minMessages: 0, description: 'Только начинаешь свой путь', emoji: '🐣' },
-      { name: 'Агент-стажёр', category: 'agency', minMessages: 10, description: 'Показал потенциал', emoji: '🎓' },
-      { name: 'Младший агент', category: 'agency', minMessages: 50, description: 'Доказал свою полезность', emoji: '🔫' },
-      { name: 'Агент', category: 'agency', minMessages: 100, description: 'Надёжный член команды', emoji: '🕵️' },
-      { name: 'Старший агент', category: 'agency', minMessages: 250, description: 'Опытный профессионал', emoji: '🎖️' },
-      { name: 'Специальный агент', category: 'agency', minMessages: 500, description: 'Элита агентства', emoji: '⭐' },
-      { name: 'Легенда агентства', category: 'agency', minMessages: 1000, description: 'Живая легенда', emoji: '🏆' },
+      { name: 'Рекрут', category: 'agency', minMessages: 0, description: 'Только что поступил в агентство', emoji: '📋' },
+      { name: 'Агент-стажёр', category: 'agency', minMessages: 10, description: 'Изучает базу знаний и Stack Overflow', emoji: '🎓' },
+      { name: 'Оперативник', category: 'agency', minMessages: 25, description: 'Активно помогает на собеседованиях', emoji: '🎧' },
+      { name: 'Младший агент', category: 'agency', minMessages: 50, description: 'Мастер списывания с ChatGPT', emoji: '🔫' },
+      { name: 'Агент', category: 'agency', minMessages: 100, description: 'Надёжный член команды IT Agents', emoji: '🕵️' },
+      { name: 'Старший агент', category: 'agency', minMessages: 250, description: 'Ветеран live-помощи на собеседованиях', emoji: '🎖️' },
+      { name: 'Специальный агент', category: 'agency', minMessages: 500, description: 'Элита агентства, мастер сложных миссий', emoji: '⭐' },
+      { name: 'Легенда агентства', category: 'agency', minMessages: 1000, description: 'Живая легенда IT Agents', emoji: '🏆' },
     ];
 
     const interviewRanks = [
-      { name: 'Junior', category: 'interview', minMessages: 0, description: 'Начинающий разработчик', emoji: '🌱' },
-      { name: 'Middle', category: 'interview', minMessages: 50, description: 'Опытный разработчик', emoji: '💻' },
-      { name: 'Senior', category: 'interview', minMessages: 150, description: 'Ведущий разработчик', emoji: '🚀' },
-      { name: 'Tech Lead', category: 'interview', minMessages: 300, description: 'Технический лидер', emoji: '👑' },
-      { name: 'Architect', category: 'interview', minMessages: 500, description: 'Архитектор решений', emoji: '🏗️' },
+      { name: 'Junior Candidate', category: 'interview', minMessages: 0, description: 'Начинающий разработчик', emoji: '🌱' },
+      { name: 'Middle Candidate', category: 'interview', minMessages: 50, description: 'Опытный разработчик', emoji: '💻' },
+      { name: 'Senior Candidate', category: 'interview', minMessages: 150, description: 'Ведущий разработчик', emoji: '🚀' },
+      { name: 'Tech Lead Candidate', category: 'interview', minMessages: 300, description: 'Технический лидер', emoji: '👑' },
+      { name: 'Architect Candidate', category: 'interview', minMessages: 500, description: 'Архитектор решений', emoji: '🏗️' },
       { name: 'CTO Material', category: 'interview', minMessages: 1000, description: 'Потенциальный CTO', emoji: '💎' },
     ];
 

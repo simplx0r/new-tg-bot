@@ -33,11 +33,11 @@ class RankService {
 
   formatUserRank(user) {
     if (!user.rank_name) {
-      return `${EMOJI.USER} ${formatUserName(user)}\n${EMOJI.AGENT} Звание: Не присвоено`;
+      return `${EMOJI.AGENT} Агент ${formatUserName(user)}\n${EMOJI.OPERATIVE} Звание: Не присвоено`;
     }
 
     const emoji = user.rank_emoji || EMOJI.AGENT;
-    return `${EMOJI.USER} ${formatUserName(user)}\n${emoji} Звание: ${user.rank_name}`;
+    return `${EMOJI.AGENT} Агент ${formatUserName(user)}\n${emoji} Звание: ${user.rank_name}`;
   }
 
   formatRanksList(ranks) {
@@ -49,16 +49,16 @@ class RankService {
     const agencyRanks = allRanks.filter((r) => r.category === RANK_CATEGORIES.AGENCY);
     const interviewRanks = allRanks.filter((r) => r.category === RANK_CATEGORIES.INTERVIEW);
 
-    let message = `${EMOJI.AGENT} Система званий:\n\n`;
+    let message = `${EMOJI.AGENT} Система званий IT Agents:\n\n`;
 
     message += `${EMOJI.SHIELD} Агентские звания:\n`;
     agencyRanks.forEach((rank) => {
-      message += `  ${rank.emoji || EMOJI.AGENT} ${rank.name} (${rank.min_messages}+ сообщений)\n`;
+      message += `  ${rank.emoji || EMOJI.AGENT} ${rank.name} (${rank.min_messages}+ миссий)\n`;
     });
 
     message += `\n${EMOJI.BRIEFCASE} Звания IT-специалистов:\n`;
     interviewRanks.forEach((rank) => {
-      message += `  ${rank.emoji || EMOJI.BRIEFCASE} ${rank.name} (${rank.min_messages}+ сообщений)\n`;
+      message += `  ${rank.emoji || EMOJI.BRIEFCASE} ${rank.name} (${rank.min_messages}+ миссий)\n`;
     });
 
     return message;
@@ -73,8 +73,8 @@ class RankService {
       const userName = formatUserName(user);
       const emoji = newRank.emoji || EMOJI.AGENT;
 
-      const message = `${EMOJI.SPARKLES} Поздравляем ${userName}! ${emoji}\n\n`
-        + `Вы получили новое звание: ${newRank.name}!\n`
+      const message = `${EMOJI.SPARKLES} Поздравляем агента ${userName}! ${emoji}\n\n`
+        + `Вы получили новое звание в IT Agents: ${newRank.name}!\n`
         + `${newRank.description || ''}`;
 
       return safeSendMessage(bot, chatId, message);

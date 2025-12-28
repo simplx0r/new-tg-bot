@@ -6,25 +6,45 @@ import { fileURLToPath } from 'url';
 import { CalculateRankUseCase } from '../../application/useCases/CalculateRankUseCase.js';
 import { RecordMessageUseCase } from '../../application/useCases/RecordMessageUseCase.js';
 import { SendJokeUseCase } from '../../application/useCases/SendJokeUseCase.js';
+import { ConfigValidator } from '../../config/ConfigValidator.js';
+import { JokeBotManager } from '../../core/JokeBotManager.js';
 import * as queries from '../../database/queries.js';
 import { EventDispatcher } from '../../domain/events/EventDispatcher.js';
+import { MessageHandler } from '../../presentation/handlers/MessageHandler.js';
+import ReactionService from '../../services/reactionService.js';
+import { CacheService } from '../cache/CacheService.js';
+import { ErrorHandler } from '../errorHandling/ErrorHandler.js';
+import { MetricsCollector } from '../monitoring/MetricsCollector.js';
 import { ChatSettingsRepository } from '../repositories/ChatSettingsRepository.js';
-import { JokeRepository } from '../repositories/JokeRepository.js';
 import { JokeHistoryRepository } from '../repositories/JokeHistoryRepository.js';
+import { JokeRepository } from '../repositories/JokeRepository.js';
 import { RankRepository } from '../repositories/RankRepository.js';
 import { ReactionRepository } from '../repositories/ReactionRepository.js';
 import { StatsRepository } from '../repositories/StatsRepository.js';
-import { UserRepository } from '../repositories/UserRepository.js';
 import { UserRankRepository } from '../repositories/UserRankRepository.js';
-import { MessageHandler } from '../../presentation/handlers/MessageHandler.js';
-import ReactionService from '../../services/reactionService.js';
+import { UserRepository } from '../repositories/UserRepository.js';
+import { Scheduler } from '../scheduling/Scheduler.js';
+import { TelegramAdapter } from '../telegram/TelegramAdapter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export function configureContainer(container, config) {
-  // Database connection
-  container.register('db', () => {
+  // Валидация конфигурации
+  const validation = ConfigValidator.validate(config);
+  if (!validation.valid) {
+    throw new Error(`Invalid configuration: ${validation.errors.join(', ')}`);
+  }
+
+  if (validation.warnings.length > 0) {
+    console.warn(`Configuration warnings: ${validation.warnings.join(', ')}`);
+  }
+
+  // Config (singleton)
+  container.registerInstance('config', config);
+
+  // Database connection (singleton)
+  container.registerSingleton('db', () => {
     const dbPath = config.database.path;
     const dir = path.dirname(dbPath);
 
@@ -50,7 +70,7 @@ export function configureContainer(container, config) {
 
     // Prepare statements
     const statements = new Map();
-    Object.values(queries).forEach(querySet => {
+    Object.values(queries).forEach((querySet) => {
       Object.entries(querySet).forEach(([name, sql]) => {
         if (!sql.includes('CREATE TABLE')) {
           statements.set(name, db.prepare(sql));
@@ -60,80 +80,98 @@ export function configureContainer(container, config) {
     db.statements = statements;
 
     return db;
-  });
+  }, { disposeMethod: 'close' });
 
   // Event Dispatcher (singleton)
   container.registerInstance('eventDispatcher', new EventDispatcher());
 
-  // Repositories
-  container.register('userRepository', (container) => {
-    return new UserRepository(container.get('db'));
+  // Telegram Adapter (singleton)
+  container.registerSingleton('telegramAdapter', () => {
+    const adapter = new TelegramAdapter(config.telegram.token, { polling: true });
+
+    // Добавляем обработчик ошибок для Telegram API
+    const errorHandler = container.get('errorHandler');
+    adapter.addErrorHandler('sendMessage', async (error, context) => {
+      await errorHandler.handle(error, context);
+    });
+
+    return adapter;
   });
 
-  container.register('statsRepository', (container) => {
-    return new StatsRepository(container.get('db'));
+  // Error Handler (singleton)
+  container.registerSingleton('errorHandler', () => {
+    const eventDispatcher = container.get('eventDispatcher');
+    return new ErrorHandler({
+      eventDispatcher,
+      logToConsole: true,
+      dispatchEvents: true,
+    });
   });
 
-  container.register('jokeRepository', (container) => {
-    return new JokeRepository(container.get('db'));
-  });
+  // Scheduler (singleton)
+  container.registerSingleton('scheduler', () => new Scheduler({ autoStart: true }));
 
-  container.register('jokeHistoryRepository', (container) => {
-    return new JokeHistoryRepository(container.get('db'));
-  });
+  // Cache Service (singleton)
+  container.registerSingleton('cacheService', () => new CacheService({
+    maxSize: 1000,
+    defaultTTL: 5 * 60 * 1000, // 5 минут
+    enabled: true,
+  }));
 
-  container.register('rankRepository', (container) => {
-    return new RankRepository(container.get('db'));
-  });
+  // Metrics Collector (singleton)
+  container.registerSingleton('metricsCollector', () => new MetricsCollector({
+    enabled: true,
+    maxHistorySize: 1000,
+  }));
 
-  container.register('userRankRepository', (container) => {
-    return new UserRankRepository(container.get('db'));
-  });
+  // Repositories (transient)
+  container.registerTransient('userRepository', (container) => new UserRepository(container.get('db')));
 
-  container.register('chatSettingsRepository', (container) => {
-    return new ChatSettingsRepository(container.get('db'));
-  });
+  container.registerTransient('statsRepository', (container) => new StatsRepository(container.get('db')));
 
-  container.register('reactionRepository', (container) => {
-    return new ReactionRepository(container.get('db'));
-  });
+  container.registerTransient('jokeRepository', (container) => new JokeRepository(container.get('db')));
 
-  container.register('reactionService', (container) => {
-    return new ReactionService(container.get('reactionRepository'));
-  });
+  container.registerTransient('jokeHistoryRepository', (container) => new JokeHistoryRepository(container.get('db')));
 
-  // Use Cases
-  container.register('recordMessageUseCase', (container) => {
-    return new RecordMessageUseCase(
-      container.get('userRepository'),
-      container.get('statsRepository'),
-      container.get('eventDispatcher')
-    );
-  });
+  container.registerTransient('rankRepository', (container) => new RankRepository(container.get('db')));
 
-  container.register('sendJokeUseCase', (container) => {
-    return new SendJokeUseCase(
-      container.get('jokeRepository'),
-      container.get('jokeHistoryRepository'),
-      container.get('eventDispatcher')
-    );
-  });
+  container.registerTransient('userRankRepository', (container) => new UserRankRepository(container.get('db')));
 
-  container.register('calculateRankUseCase', (container) => {
-    return new CalculateRankUseCase(
-      container.get('rankRepository'),
-      container.get('userRankRepository'),
-      container.get('eventDispatcher'),
-    );
-  });
+  container.registerTransient('chatSettingsRepository', (container) => new ChatSettingsRepository(container.get('db')));
 
-  container.register('messageHandler', (container) => {
-    return new MessageHandler(
-      container.get('recordMessageUseCase'),
-      container.get('calculateRankUseCase'),
-      container.get('reactionService'),
-      container.get('userRepository'),
-      container.get('config').telegram.defaultTopicId,
-    );
-  });
+  container.registerTransient('reactionRepository', (container) => new ReactionRepository(container.get('db')));
+
+  // Services (transient)
+  container.registerTransient('reactionService', (container) => new ReactionService(container.get('reactionRepository')));
+
+  // Use Cases (transient)
+  container.registerTransient('recordMessageUseCase', (container) => new RecordMessageUseCase(
+    container.get('userRepository'),
+    container.get('statsRepository'),
+    container.get('eventDispatcher'),
+  ));
+
+  container.registerTransient('sendJokeUseCase', (container) => new SendJokeUseCase(
+    container.get('jokeRepository'),
+    container.get('jokeHistoryRepository'),
+    container.get('eventDispatcher'),
+  ));
+
+  container.registerTransient('calculateRankUseCase', (container) => new CalculateRankUseCase(
+    container.get('rankRepository'),
+    container.get('userRankRepository'),
+    container.get('eventDispatcher'),
+  ));
+
+  // Handlers (transient)
+  container.registerTransient('messageHandler', (container) => new MessageHandler(
+    container.get('recordMessageUseCase'),
+    container.get('calculateRankUseCase'),
+    container.get('reactionService'),
+    container.get('userRepository'),
+    container.get('config').telegram.defaultTopicId,
+  ));
+
+  // Bot Manager (singleton)
+  container.registerSingleton('jokeBotManager', (container) => new JokeBotManager(container));
 }

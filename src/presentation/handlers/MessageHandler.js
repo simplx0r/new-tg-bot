@@ -1,26 +1,39 @@
 import { MiddlewarePresets } from '../../infrastructure/middleware/Middleware.js';
-import { safeSendMessage, getTopicId } from '../../utils/telegramHelpers.js';
+import { getTopicId } from '../../utils/telegramHelpers.js';
+import { CHAT_TYPES } from '../../constants/index.js';
 
+/**
+ * Обработчик сообщений от Telegram
+ * Координирует middleware и Use Cases для обработки сообщений
+ */
 export class MessageHandler {
-  constructor(recordMessageUseCase, calculateRankUseCase, reactionService, userRepository) {
+  /**
+   * @param {Object} recordMessageUseCase - Use Case для записи сообщений
+   * @param {Object} calculateRankUseCase - Use Case для расчёта званий
+   * @param {Object} reactionService - Сервис реакций
+   * @param {Object} userRepository - Репозиторий пользователей
+   * @param {number} defaultTopicId - ID темы по умолчанию
+   */
+  constructor(recordMessageUseCase, calculateRankUseCase, reactionService, userRepository, defaultTopicId) {
     this.recordMessageUseCase = recordMessageUseCase;
     this.calculateRankUseCase = calculateRankUseCase;
     this.reactionService = reactionService;
     this.userRepository = userRepository;
+    this.defaultTopicId = defaultTopicId;
 
-    // Создаем пайплайн middleware для обработки сообщений
+    // Создаём пайплайн middleware для обработки сообщений
     this.middlewarePipeline = MiddlewarePresets.messagePipeline(userRepository);
   }
 
   /**
-   * Обработчик сообщений с использованием middleware
+   * Обработать сообщение
    * @param {Object} msg - Сообщение от Telegram
-   * @param {Object} bot - Экземпляр бота
+   * @param {Object} telegramAdapter - Адаптер Telegram API
    */
-  async handle(msg, bot) {
+  async handle(msg, telegramAdapter) {
     const context = {
       message: msg,
-      bot,
+      telegramAdapter,
       reply: null,
       user: null,
       metadata: null,
@@ -31,10 +44,10 @@ export class MessageHandler {
       await this.processMessage(ctx);
 
       // Если middleware установил ответ, отправляем его
-      if (ctx.reply && ctx.bot) {
+      if (ctx.reply && ctx.telegramAdapter) {
         const threadId = getTopicId(ctx.message);
         const options = threadId ? { message_thread_id: threadId } : {};
-        await safeSendMessage(ctx.bot, ctx.message.chat.id, ctx.reply.text, options);
+        await ctx.telegramAdapter.sendMessage(ctx.message.chat.id, ctx.reply.text, options);
       }
     };
 
@@ -44,10 +57,11 @@ export class MessageHandler {
 
   /**
    * Основная логика обработки сообщения
+   * @private
    * @param {Object} context - Контекст выполнения
    */
   async processMessage(context) {
-    const { message, bot } = context;
+    const { message, telegramAdapter } = context;
     const threadId = getTopicId(message);
 
     // Record message
@@ -56,10 +70,10 @@ export class MessageHandler {
     // Calculate and check rank
     await this.calculateRankUseCase.execute(user.id, message.chat.id, stats.messageCount, threadId);
 
-    // Send reaction
-    if (message.chat.type === 'group' || message.chat.type === 'supergroup') {
+    // Send reaction (только в групповых чатах)
+    if (message.chat.type === CHAT_TYPES.GROUP || message.chat.type === CHAT_TYPES.SUPERGROUP) {
       const options = threadId ? { message_thread_id: threadId } : {};
-      await this.reactionService.sendRandomReaction(bot, message.chat.id, options);
+      await this.reactionService.sendRandomReaction(telegramAdapter, message.chat.id, options);
     }
   }
 }

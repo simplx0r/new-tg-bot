@@ -4,36 +4,36 @@ import { safeSendMessage } from '../utils/telegramHelpers.js';
 export function setupHelpCommand(bot) {
   bot.onText(new RegExp(`^${COMMANDS.HELP}$`), (msg) => {
     const chatId = msg.chat.id;
-    const message = `${EMOJI.BOOK} Справка по командам:
+    const message = `${EMOJI.BOOK} Справка по командам IT Agents:
 
-${EMOJI.LAUGH} Шутки:
+${EMOJI.LAUGH} Шутки агентства:
 /joke — получить случайную шутку
 /joke <категория> — шутка из категории (${Object.values(JOKE_CATEGORIES).join(', ')})
 
-${EMOJI.CHART} Статистика:
-/stats — твоя статистика
-/top — топ 10 активных пользователей
-/top <N> — топ N активных пользователей
-/allstats — статистика всех пользователей
-/summary — общая статистика чата
+${EMOJI.CHART} Оперативная статистика:
+/stats — твоя статистика агента
+/top — топ 10 самых активных агентов
+/top <N> — топ N самых активных агентов
+/allstats — статистика всех агентов
+/summary — общая статистика миссий
 
-${EMOJI.AGENT} Звания:
-/rank — твоё текущее звание
-/ranks — система званий
+${EMOJI.AGENT} Система званий:
+/rank — твоё текущее звание в агентстве
+/ranks — система званий IT Agents
 
-${EMOJI.GEAR} Админские команды:
-/addjoke <текст> — добавить новую шутку
-/jokes — список всех шуток в базе
+${EMOJI.GEAR} Команды командиров:
+/addjoke <текст> — добавить новую шутку в архив
+/jokes — список всех шуток в базе агентства
 /jokestats — статистика использования шуток
-/jokeson — включить автоматические шутки
-/jokesoff — выключить автоматические шутки
+/jokeson — активировать автоматические шутки
+/jokesoff — деактивировать автоматические шутки
 /setinterval <минуты> — установить интервал авто-шуток (в минутах)
-/addadmin <user_id> — добавить пользователя в админы
-/removeadmin <user_id> — удалить пользователя из админов
-/admins — список всех админов
+/addadmin <user_id> — назначить командира агентства
+/removeadmin <user_id> — снять командира агентства
+/admins — список всех командиров
 
-${EMOJI.BELL} Уведомления:
-/notify <текст> — отправить уведомление всем (текст будет скрыт)
+${EMOJI.BELL} Секретные уведомления:
+/notify <текст> — отправить секретное уведомление всем (текст будет скрыт)
 
 ${EMOJI.BULB} Подсказка: Для получения user_id можно использовать бота @userinfobot`;
 

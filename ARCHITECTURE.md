@@ -2,28 +2,37 @@
 
 ## Обзор
 
-Проект построен на принципах **Clean Architecture** с использованием **Dependency Injection** и **Event-driven** подхода.
+Проект построен на принципах **Clean Architecture** с использованием **Dependency Injection**, **Event-driven** подхода и современными паттернами проектирования.
 
 ## Структура слоёв
 
 ```
 src/
-├── domain/                 # Бизнес-логика (Core)
-│   ├── entities/           # Сущности домена
-│   ├── valueObjects/       # Объекты-значения
-│   └── events/            # Доменные события
-├── application/            # Приложение (Use Cases)
-│   └── useCases/          # Сценарии использования
-├── infrastructure/          # Инфраструктура
-│   ├── repositories/        # Репозитории (Data Access)
-│   ├── di/                # Dependency Injection
-│   └── database/           # База данных
-├── presentation/           # Презентация
-│   └── handlers/          # Обработчики событий
-├── config/                # Конфигурация
-├── constants/             # Константы
-├── utils/                 # Утилиты
-└── data/                  # Данные (jokes)
+├── core/                      # Ядро приложения
+│   └── JokeBotManager.js     # Менеджер жизненного цикла бота
+├── domain/                     # Бизнес-логика (Core)
+│   ├── entities/               # Сущности домена
+│   ├── valueObjects/           # Объекты-значения
+│   ├── events/                # Доменные события
+│   └── errors/               # Доменные ошибки
+├── application/                 # Приложение (Use Cases)
+│   └── useCases/              # Сценарии использования
+├── infrastructure/              # Инфраструктура
+│   ├── telegram/               # Telegram API адаптер
+│   ├── di/                    # Dependency Injection
+│   ├── repositories/            # Репозитории (Data Access)
+│   ├── middleware/             # Middleware для обработки
+│   ├── errorHandling/          # Обработка ошибок
+│   ├── scheduling/             # Планировщик задач
+│   ├── cache/                  # Сервис кэширования
+│   ├── monitoring/              # Метрики и мониторинг
+│   └── logging/                # Логирование
+├── presentation/                # Презентация
+│   └── handlers/               # Обработчики событий
+├── config/                     # Конфигурация
+├── constants/                  # Константы
+├── utils/                      # Утилиты
+└── data/                       # Данные (jokes)
 ```
 
 ## Принципы Clean Architecture
@@ -46,9 +55,10 @@ Presentation → Application → Domain ← Infrastructure
 
 | Слой | Ответственность |
 |--------|----------------|
+| **Core** | Координация компонентов, управление жизненным циклом |
 | **Domain** | Бизнес-логика, сущности, события |
 | **Application** | Use Cases, оркестрация бизнес-логики |
-| **Infrastructure** | Внешние зависимости (БД, API, DI) |
+| **Infrastructure** | Внешние зависимости (БД, API, DI, кэш) |
 | **Presentation** | Обработка внешних событий (Telegram) |
 
 ### 3. Dependency Inversion
@@ -66,6 +76,136 @@ class RecordMessageUseCase {
 }
 ```
 
+## Ключевые компоненты
+
+### 1. JokeBotManager
+
+**Менеджер жизненного цикла бота** - координирует все компоненты:
+
+- Запускает и останавливает бота
+- Настраивает обработчики событий
+- Управляет авто-шутками
+- Обрабатывает события Telegram
+- Собирает и предоставляет статистику
+
+```javascript
+const botManager = new JokeBotManager(container);
+await botManager.start();
+```
+
+### 2. TelegramAdapter
+
+**Абстракция над Telegram API**:
+
+- Инкапсулирует логику работы с `node-telegram-bot-api`
+- Обрабатывает ошибки Telegram API
+- Позволяет легко мокать в тестах
+- Поддерживает миграцию на другие библиотеки
+
+```javascript
+class TelegramAdapter extends ITelegramAdapter {
+  async sendMessage(chatId, text, options) {
+    // Реализация с обработкой ошибок
+  }
+}
+```
+
+### 3. Улучшенный DI контейнер
+
+**Контейнер с жизненными циклами**:
+
+- **Singleton**: Один экземпляр на всё время работы
+- **Transient**: Создаётся при каждом запросе
+- **Scoped**: Один экземпляр на scope
+
+```javascript
+container.registerSingleton('db', () => new Database());
+container.registerTransient('userRepository', (c) => new UserRepository(c.get('db')));
+```
+
+### 4. Типизированные события
+
+**Система доменных событий** с:
+
+- Типобезопасностью
+- Автодополнением в IDE
+- Валидацией payload
+
+```javascript
+const event = new MessageRecordedEvent({
+  user,
+  stats,
+  chatId,
+});
+
+await eventDispatcher.dispatch(event);
+```
+
+### 5. ErrorHandler
+
+**Централизованная обработка ошибок**:
+
+- Классификация ошибок по критичности
+- Сбор статистики ошибок
+- Отправка уведомлений
+
+```javascript
+const errorHandler = new ErrorHandler({
+  eventDispatcher,
+  logToConsole: true,
+  dispatchEvents: true,
+});
+
+await errorHandler.handle(error, { context: 'some-operation' });
+```
+
+### 6. Scheduler
+
+**Планировщик задач** с поддержкой:
+
+- Interval задач
+- Timeout задач
+- Cron выражений
+- Одноразовых задач
+
+```javascript
+scheduler.scheduleInterval('task-id', async () => {
+  // Выполнение задачи
+}, 60000); // Каждые 60 секунд
+```
+
+### 7. CacheService
+
+**Сервис кэширования** с:
+
+- TTL (Time To Live)
+- LRU eviction
+- Статистикой кэша
+
+```javascript
+const cache = new CacheService({
+  maxSize: 1000,
+  defaultTTL: 5 * 60 * 1000, // 5 минут
+});
+
+cache.set('key', value, ttl);
+const cached = cache.get('key');
+```
+
+### 8. MetricsCollector
+
+**Коллектор метрик** для:
+
+- Счётчиков (counters)
+- Измерений (gauges)
+- Гистограмм (histograms)
+- Таймингов (timings)
+
+```javascript
+metricsCollector.increment('messages.received');
+metricsCollector.timing('message.process', durationMs);
+```
+
 ## Dependency Injection (DI)
 
 ### Container
@@ -74,7 +214,7 @@ DI контейнер управляет жизненным циклом зав�
 
 ```javascript
 // Регистрация сервиса
-container.register('userRepository', (container) => {
+container.registerSingleton('userRepository', (container) => {
   return new UserRepository(container.get('db'));
 });
 
@@ -87,6 +227,7 @@ const userRepo = container.get('userRepository');
 - **Тестируемость**: Легко мокать зависимости
 - **Масштабируемость**: Простое добавление новых сервисов
 - **Слабая связанность**: Модули не знают о реализации зависимостей
+- **Управление ресурсами**: Автоматическая очистка при остановке
 
 ## Event-Driven Architecture
 
@@ -105,19 +246,21 @@ eventDispatcher.dispatch({
 });
 ```
 
+### Типизированные события
+
+| Событие | Класс | Payload |
+|----------|--------|---------|
+| `message.recorded` | [`MessageRecordedEvent`](src/domain/events/TypedEvent.js) | `{ user, stats, chatId }` |
+| `joke.sent` | [`JokeSentEvent`](src/domain/events/TypedEvent.js) | `{ joke, chatId, threadId }` |
+| `rank.earned` | [`RankEarnedEvent`](src/domain/events/TypedEvent.js) | `{ userId, rank, chatId, threadId }` |
+| `error.occurred` | [`ErrorEvent`](src/domain/events/TypedEvent.js) | `{ error, context, metadata }` |
+
 ### Преимущества Events
 
 - **Слабая связанность**: Модули общаются через события
 - **Расширяемость**: Легко добавлять новые обработчики
 - **Асинхронность**: Обработка событий не блокирует основной поток
-
-### Доменные события
-
-| Событие | Описание | Payload |
-|----------|-------------|----------|
-| `message.recorded` | Сообщение записано | `{ user, stats, chatId }` |
-| `joke.sent` | Шутка отправлена | `{ joke, chatId }` |
-| `rank.earned` | Звание получено | `{ userId, rank, chatId }` |
+- **Типобезопасность**: Автодополнение и валидация
 
 ## Repository Pattern
 
@@ -167,9 +310,9 @@ class RecordMessageUseCase {
 
 | Use Case | Ответственность |
 |-----------|----------------|
-| `RecordMessageUseCase` | Запись сообщения и обновление статистики |
-| `SendJokeUseCase` | Отправка случайной шутки |
-| `CalculateRankUseCase` | Расчёт и присвоение звания |
+| [`RecordMessageUseCase`](src/application/useCases/RecordMessageUseCase.js) | Запись сообщения и обновление статистики |
+| [`SendJokeUseCase`](src/application/useCases/SendJokeUseCase.js) | Отправка случайной шутки |
+| [`CalculateRankUseCase`](src/application/useCases/CalculateRankUseCase.js) | Расчёт и присвоение звания |
 
 ## Flow данных
 
@@ -201,26 +344,51 @@ Telegram Notification (Presentation)
 
 ```javascript
 export function configureContainer(container, config) {
-  // Database
-  container.register('db', () => new Database(config.database.path));
+  // Валидация конфигурации
+  const validation = ConfigValidator.validate(config);
+  if (!validation.valid) {
+    throw new Error(`Invalid configuration: ${validation.errors.join(', ')}`);
+  }
+
+  // Database (singleton)
+  container.registerSingleton('db', () => new Database(config.database.path));
 
   // Event Dispatcher (singleton)
   container.registerInstance('eventDispatcher', new EventDispatcher());
 
-  // Repositories
-  container.register('userRepository', (container) => {
-    return new UserRepository(container.get('db'));
-  });
+  // Repositories (transient)
+  container.registerTransient('userRepository', (c) => new UserRepository(c.get('db')));
 
-  // Use Cases
-  container.register('recordMessageUseCase', (container) => {
-    return new RecordMessageUseCase(
-      container.get('userRepository'),
-      container.get('statsRepository'),
-      container.get('eventDispatcher')
-    );
-  });
+  // Use Cases (transient)
+  container.registerTransient('recordMessageUseCase', (c) => new RecordMessageUseCase(
+    c.get('userRepository'),
+    c.get('statsRepository'),
+    c.get('eventDispatcher')
+  ));
+
+  // Bot Manager (singleton)
+  container.registerSingleton('jokeBotManager', (c) => new JokeBotManager(c));
 }
+```
+
+## Мониторинг и метрики
+
+### Метрики приложения
+
+Система собирает следующие метрики:
+
+- `bot.start` / `bot.stop` - Запуск и остановка бота
+- `messages.received` - Полученные сообщения
+- `jokes.sent` - Отправленные шутки
+- `ranks.earned` - Полученные звания
+- `chat.members.new` / `chat.members.left` - Вход/выход участников
+- `autojokes.started` / `autojokes.stopped` - Авто-шутки
+
+### Получение метрик
+
+```javascript
+const stats = botManager.getStats();
+console.log(stats.metrics);
 ```
 
 ## Тестирование
@@ -246,10 +414,12 @@ describe('RecordMessageUseCase', () => {
 
     expect(mockUserRepo.getOrCreate).toHaveBeenCalled();
     expect(mockStatsRepo.increment).toHaveBeenCalled();
-    expect(mockEventDispatcher.dispatch).toHaveBeenCalledWith({
-      name: 'message.recorded',
-      payload: expect.any(Object)
-    });
+    expect(mockEventDispatcher.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'message.recorded',
+        payload: expect.any(Object)
+      })
+    );
   });
 });
 ```
@@ -284,12 +454,10 @@ export class NotifyUseCase {
 }
 
 // 2. Register in DI (infrastructure/di/config.js)
-container.register('notifyUseCase', (container) => {
-  return new NotifyUseCase(
-    container.get('notificationRepository'),
-    container.get('eventDispatcher')
-  );
-});
+container.registerTransient('notifyUseCase', (c) => new NotifyUseCase(
+  c.get('notificationRepository'),
+  c.get('eventDispatcher')
+));
 
 // 3. Create Handler (presentation/handlers/NotifyHandler.js)
 export class NotifyHandler {
@@ -297,7 +465,7 @@ export class NotifyHandler {
     this.notifyUseCase = notifyUseCase;
   }
 
-  async handle(msg, bot) {
+  async handle(msg, telegramAdapter) {
     await this.notifyUseCase.execute(msg.chat.id, msg.text);
   }
 }
@@ -308,34 +476,38 @@ export class NotifyHandler {
 ### 1. Single Responsibility Principle
 
 Каждый класс делает одну вещь:
-- `UserRepository` — только работа с пользователями
-- `RecordMessageUseCase` — только запись сообщения
-- `MessageHandler` — только обработка Telegram сообщений
+- [`JokeBotManager`](src/core/JokeBotManager.js) — только управление жизненным циклом
+- [`UserRepository`](src/infrastructure/repositories/UserRepository.js) — только работа с пользователями
+- [`RecordMessageUseCase`](src/application/useCases/RecordMessageUseCase.js) — только запись сообщения
+- [`MessageHandler`](src/presentation/handlers/MessageHandler.js) — только обработка Telegram сообщений
 
 ### 2. Dependency Inversion
 
 Зависим от абстракций, а не от реализаций:
 - Use Cases зависят от Repository interfaces
 - Handlers зависят от Use Cases
+- [`JokeBotManager`](src/core/JokeBotManager.js) зависит от [`ITelegramAdapter`](src/infrastructure/telegram/ITelegramAdapter.js)
 
 ### 3. Open/Closed Principle
 
 Открыт для расширения, закрыт для модификаций:
 - Добавление новых событий не требует изменения существующего кода
 - Добавление новых Use Cases не требует изменения DI контейнера
+- Новые обработчики ошибок через [`ErrorHandler`](src/infrastructure/errorHandling/ErrorHandler.js)
 
 ### 4. Interface Segregation
 
 Маленькие, сфокусированные интерфейсы:
-- `UserRepository` — только методы для работы с пользователями
-- `StatsRepository` — только методы для статистики
+- [`ITelegramAdapter`](src/infrastructure/telegram/ITelegramAdapter.js) — только методы для работы с Telegram
+- [`EventDispatcher`](src/domain/events/EventDispatcher.js) — только методы для работы с событиями
+- [`Container`](src/infrastructure/di/Container.js) — только методы DI
 
 ### 5. Don't Repeat Yourself (DRY)
 
 Переиспользование существующего кода:
-- Common formatting functions in `utils/formatters.js`
-- Common validation functions in `utils/validators.js`
-- Common constants in `constants/index.js`
+- Common formatting functions in [`formatters.js`](src/utils/formatters.js)
+- Common validation functions in [`validators.js`](src/utils/validators.js)
+- Common constants in [`constants/index.js`](src/constants/index.js)
 
 ## Заключение
 
@@ -346,3 +518,6 @@ export class NotifyHandler {
 - ✅ **Поддерживаемость**: Чёткое разделение ответственности
 - ✅ **Гибкость**: Легко менять реализации без изменения бизнес-логики
 - ✅ **Надёжность**: Слабая связанность через DI и Events
+- ✅ **Мониторинг**: Сбор метрик и статистики
+- ✅ **Кэширование**: Оптимизация производительности
+- ✅ **Обработка ошибок**: Централизованная и классифицированная

@@ -33,10 +33,10 @@ export function formatUserStats(user) {
   const lastMessage = formatDate(user.last_message_at);
   const rank = user.rank_name || 'Нет звания';
 
-  return `${EMOJI.USER} ${userName}
-${EMOJI.CHART} Сообщений: ${formatNumber(messageCount)}
-${EMOJI.AGENT} Звание: ${rank}
-${EMOJI.CLOCK} Последнее сообщение: ${lastMessage}`;
+  return `${EMOJI.AGENT} Агент ${userName}
+${EMOJI.CHART} Миссий выполнено: ${formatNumber(messageCount)}
+${EMOJI.OPERATIVE} Звание: ${rank}
+${EMOJI.CLOCK} Последняя активность: ${lastMessage}`;
 }
 
 export function formatTopUsers(users) {
@@ -44,7 +44,7 @@ export function formatTopUsers(users) {
     return `${EMOJI.CHART} Нет данных для отображения`;
   }
 
-  let message = `${EMOJI.TROPHY} Топ активных пользователей:\n\n`;
+  let message = `${EMOJI.TROPHY} Топ самых активных агентов:\n\n`;
 
   users.forEach((user, index) => {
     const userName = formatUserName(user);
@@ -60,7 +60,7 @@ export function formatTopUsers(users) {
     }
     const rank = user.rank_name || '';
     const rankText = rank ? ` [${rank}]` : '';
-    message += `${medal} ${userName}${rankText} — ${formatNumber(user.message_count)} сообщений\n`;
+    message += `${medal} Агент ${userName}${rankText} — ${formatNumber(user.message_count)} миссий\n`;
   });
 
   return message;
@@ -71,13 +71,13 @@ export function formatAllStats(users) {
     return `${EMOJI.CHART} Нет данных для отображения`;
   }
 
-  let message = `${EMOJI.CHART} Статистика чата (${users.length} пользователей):\n\n`;
+  let message = `${EMOJI.CHART} Статистика агентства (${users.length} агентов):\n\n`;
 
   users.forEach((user, index) => {
     const userName = formatUserName(user);
     const lastMessage = formatDate(user.last_message_at);
     const rank = user.rank_name || 'Нет звания';
-    message += `${index + 1}. ${userName} [${rank}]\n   ${EMOJI.CHART} ${formatNumber(user.message_count)} сообщений\n   ${EMOJI.CLOCK} ${lastMessage}\n\n`;
+    message += `${index + 1}. Агент ${userName} [${rank}]\n   ${EMOJI.CHART} ${formatNumber(user.message_count)} миссий\n   ${EMOJI.CLOCK} ${lastMessage}\n\n`;
   });
 
   return message;
@@ -85,10 +85,10 @@ export function formatAllStats(users) {
 
 export function formatJokesList(jokes) {
   if (jokes.length === 0) {
-    return `${EMOJI.BOOK} Список пуст`;
+    return `${EMOJI.BOOK} Архив агентства пуст`;
   }
 
-  let message = `${EMOJI.BOOK} Список шуток (${jokes.length}):\n\n`;
+  let message = `${EMOJI.BOOK} Архив шуток агентства (${jokes.length}):\n\n`;
   jokes.forEach((joke, index) => {
     const preview = joke.content.length > 50
       ? `${joke.content.substring(0, 50)}...`
@@ -100,8 +100,8 @@ export function formatJokesList(jokes) {
 }
 
 export function formatJokeStats(stats) {
-  let message = `${EMOJI.CHART} Статистика шуток:\n\n`;
-  message += `${EMOJI.BOOK} Всего шуток: ${formatNumber(stats.totalJokes)}\n`;
+  let message = `${EMOJI.CHART} Статистика шуток агентства:\n\n`;
+  message += `${EMOJI.BOOK} Всего в архиве: ${formatNumber(stats.totalJokes)}\n`;
   message += `${EMOJI.TROPHY} Всего отправлено: ${formatNumber(stats.totalUsage)}\n\n`;
   message += `${EMOJI.BOOK} По категориям:\n`;
 
@@ -113,10 +113,10 @@ export function formatJokeStats(stats) {
 }
 
 export function formatChatSummary(summary) {
-  return `${EMOJI.CHART} Общая статистика чата:
-${EMOJI.USERS} Пользователей: ${formatNumber(summary.totalUsers)}
-${EMOJI.MESSAGE} Всего сообщений: ${formatNumber(summary.totalMessages)}
-${EMOJI.TROPHY} Самый активный: ${summary.mostActiveName} (${formatNumber(summary.mostActiveCount)} сообщений)`;
+  return `${EMOJI.CHART} Общая статистика агентства:
+${EMOJI.USERS} Агентов: ${formatNumber(summary.totalUsers)}
+${EMOJI.MESSAGE} Миссий выполнено: ${formatNumber(summary.totalMessages)}
+${EMOJI.TROPHY} Самый активный агент: ${summary.mostActiveName} (${formatNumber(summary.mostActiveCount)} миссий)`;
 }
 
 export function formatRanksList(ranks) {
@@ -124,12 +124,12 @@ export function formatRanksList(ranks) {
     return `${EMOJI.AGENT} Список званий пуст`;
   }
 
-  let message = `${EMOJI.AGENT} Система званий:\n\n`;
+  let message = `${EMOJI.AGENT} Система званий IT Agents:\n\n`;
 
   ranks.forEach((rank, index) => {
     const emoji = rank.category === 'agency' ? EMOJI.SHIELD : EMOJI.BRIEFCASE;
     message += `${index + 1}. ${emoji} ${rank.name}\n`;
-    message += `   ${EMOJI.MESSAGE} Мин. сообщений: ${formatNumber(rank.minMessages)}\n`;
+    message += `   ${EMOJI.MESSAGE} Мин. миссий: ${formatNumber(rank.minMessages)}\n`;
     message += `   ${EMOJI.CODE} Категория: ${rank.category}\n\n`;
   });
 
@@ -138,10 +138,10 @@ export function formatRanksList(ranks) {
 
 export function formatAdminsList(admins) {
   if (admins.length === 0) {
-    return `${EMOJI.AGENT} Список админов пуст`;
+    return `${EMOJI.AGENT} Список командиров пуст`;
   }
 
-  let message = `${EMOJI.AGENT} Список админов:\n\n`;
+  let message = `${EMOJI.AGENT} Список командиров агентства:\n\n`;
   admins.forEach((admin, index) => {
     message += `${index + 1}. ID: ${admin.telegram_id}\n`;
   });
