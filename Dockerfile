@@ -25,7 +25,6 @@ COPY --from=builder /app/package*.json ./
 
 # Copy application files
 COPY --from=builder /app/src ./src
-COPY --from=builder /app/data ./data
 
 # Create non-root user for security
 RUN addgroup -S nodejs && adduser -S -D -H -u 1001 -G nodejs botuser
