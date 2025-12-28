@@ -17,9 +17,9 @@ services:
     environment:
       - NODE_ENV=production
 
-    # Volume for persistent database storage
-    volumes:
-      - bot-data:/app/data
+    # Volume for persistent database storage (if needed in future)
+    # volumes:
+    #   - bot-data:/app/data
 
     # Health check
     healthcheck:
@@ -50,10 +50,10 @@ services:
           cpus: '0.5'
           memory: 256M
 
-volumes:
-  bot-data:
-    driver: local
-    name: telegram-bot-data
+# volumes:
+#   bot-data:
+#     driver: local
+#     name: telegram-bot-data
 
 networks:
   default:
