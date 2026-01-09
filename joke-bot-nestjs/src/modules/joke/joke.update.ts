@@ -14,15 +14,46 @@ interface MatchContext extends Context {
 export class JokeUpdate {
   constructor(private readonly jokeService: JokeService) {}
 
-  @Command('joke')
-  async onJoke(@Ctx() ctx: Context): Promise<void> {
-    const joke = await this.jokeService.getRandomJoke();
+  @Hears(/^\/joke(?:\s+(\w+))?$/)
+  async onJoke(@Ctx() ctx: MatchContext): Promise<void> {
+    const category = ctx.match[1]?.toLowerCase();
+    const joke = await this.jokeService.getRandomJoke(category);
+
     if (joke !== null) {
       await this.jokeService.incrementUsage(joke);
-      await ctx.reply(`😂 ${joke.content}`);
+      const categoryLabel =
+        joke.category !== 'general' ? ` [${joke.category}]` : '';
+      await ctx.reply(`😂${categoryLabel} ${joke.content}`);
+    } else if (category !== undefined) {
+      const categories = await this.jokeService.getCategories();
+      await ctx.reply(
+        `😅 Нет шуток в категории "${category}".\n\n` +
+          `Доступные: ${categories.join(', ')}`,
+      );
     } else {
       await ctx.reply('😅 Пока нет шуток в базе. Добавьте с помощью /addjoke');
     }
+  }
+
+  @Command('jokecategories')
+  async onCategories(@Ctx() ctx: Context): Promise<void> {
+    const categories = await this.jokeService.getCategories();
+    if (categories.length === 0) {
+      await ctx.reply('📭 Нет категорий');
+      return;
+    }
+
+    const categoryDescriptions: Record<string, string> = {
+      agent: '🕵️ Многоработничество',
+      shad: '📚 ШАД/MLDS/Алгосы',
+      general: '💼 Общий IT юмор',
+    };
+
+    const list = categories
+      .map((c) => `• ${categoryDescriptions[c] ?? c} — /joke ${c}`)
+      .join('\n');
+
+    await ctx.reply(`📋 Категории шуток:\n\n${list}`);
   }
 
   @Hears(/^\/addjoke\s+(.+)/)
@@ -44,7 +75,10 @@ export class JokeUpdate {
 
     const list = jokes
       .slice(0, 10)
-      .map((j, i) => `${String(i + 1)}. ${j.content.slice(0, 50)}...`)
+      .map(
+        (j, i) =>
+          `${String(i + 1)}. [${j.category}] ${j.content.slice(0, 40)}...`,
+      )
       .join('\n');
     await ctx.reply(`📋 Шутки (${String(jokes.length)}):\n\n${list}`);
   }
@@ -59,9 +93,9 @@ export class JokeUpdate {
 
     await ctx.reply(
       `📊 Статистика шуток:\n\n` +
-      `Всего: ${String(stats.total)}\n` +
-      `Использований: ${String(stats.totalUsage)}\n` +
-      `По категориям:\n${categories !== '' ? categories : '  нет данных'}`,
+        `Всего: ${String(stats.total)}\n` +
+        `Использований: ${String(stats.totalUsage)}\n` +
+        `По категориям:\n${categories !== '' ? categories : '  нет данных'}`,
     );
   }
 }

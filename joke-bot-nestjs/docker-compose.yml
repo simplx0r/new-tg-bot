@@ -1,0 +1,36 @@
+# =========================================
+# 🕵️ Secret Agent IT Bot - Docker Compose
+# =========================================
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: secret-agent-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Persist SQLite database
+      - bot_data:/app/data
+    environment:
+      - NODE_ENV=production
+    # Optional: resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  bot_data:
+    driver: local

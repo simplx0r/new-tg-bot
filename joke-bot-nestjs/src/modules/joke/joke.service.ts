@@ -1,21 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Joke } from '../../database/entities';
+import { AGENT_JOKES } from '../../database/seeds';
 
 @Injectable()
-export class JokeService {
+export class JokeService implements OnModuleInit {
   constructor(
     @InjectRepository(Joke)
     private readonly jokeRepo: Repository<Joke>,
   ) {}
 
-  async getRandomJoke(): Promise<Joke | null> {
-    const jokes = await this.jokeRepo.find();
-    if (jokes.length === 0) {
-      return null;
+  async onModuleInit(): Promise<void> {
+    const count = await this.jokeRepo.count();
+    if (count === 0) {
+      await this.jokeRepo.save(AGENT_JOKES);
     }
-    return jokes[Math.floor(Math.random() * jokes.length)] ?? null;
+  }
+
+  async getRandomJoke(category?: string): Promise<Joke | null> {
+    const qb = this.jokeRepo.createQueryBuilder('joke');
+
+    if (category !== undefined && category !== '') {
+      qb.where('joke.category = :category', { category });
+    }
+
+    // Use SQL RANDOM() for performance instead of loading all jokes
+    const joke = await qb.orderBy('RANDOM()').limit(1).getOne();
+    return joke;
   }
 
   async addJoke(content: string, category = 'general'): Promise<Joke> {
@@ -30,6 +42,14 @@ export class JokeService {
   async incrementUsage(joke: Joke): Promise<void> {
     joke.usedCount++;
     await this.jokeRepo.save(joke);
+  }
+
+  async getCategories(): Promise<string[]> {
+    const result = await this.jokeRepo
+      .createQueryBuilder('joke')
+      .select('DISTINCT joke.category', 'category')
+      .getRawMany<{ category: string }>();
+    return result.map((r) => r.category);
   }
 
   async getStats(): Promise<{

@@ -30,8 +30,8 @@ export class StatsUpdate {
 
     await ctx.reply(
       `📊 Ваша статистика:\n\n` +
-      `👤 ${data.user.displayName}\n` +
-      `💬 Сообщений: ${String(data.stats.messageCount)}`,
+        `👤 ${data.user.displayName}\n` +
+        `💬 Сообщений: ${String(data.stats.messageCount)}`,
     );
   }
 
@@ -49,7 +49,14 @@ export class StatsUpdate {
 
     const list = top
       .map((s, i) => {
-        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${String(i + 1)}.`;
+        const medal =
+          i === 0
+            ? '🥇'
+            : i === 1
+              ? '🥈'
+              : i === 2
+                ? '🥉'
+                : `${String(i + 1)}.`;
         const name = s.user.displayName;
         return `${medal} ${name}: ${String(s.messageCount)}`;
       })
@@ -69,9 +76,9 @@ export class StatsUpdate {
 
     await ctx.reply(
       `📈 Сводка чата:\n\n` +
-      `👥 Пользователей: ${String(summary.totalUsers)}\n` +
-      `💬 Сообщений: ${String(summary.totalMessages)}\n` +
-      `🏆 Лидер: ${topName} (${String(summary.topCount)})`,
+        `👥 Пользователей: ${String(summary.totalUsers)}\n` +
+        `💬 Сообщений: ${String(summary.totalMessages)}\n` +
+        `🏆 Лидер: ${topName} (${String(summary.topCount)})`,
     );
   }
 }

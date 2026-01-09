@@ -21,16 +21,14 @@ export class RankUpdate {
     const emoji = rank.emoji ?? '🎖️';
     const description = rank.description ?? '';
 
-    await ctx.reply(
-      `🎖️ Ваш ранг:\n\n${emoji} ${rank.name}\n${description}`,
-    );
+    await ctx.reply(`🎖️ Ваш ранг:\n\n${emoji} ${rank.name}\n${description}`);
   }
 
   @Command('ranks')
   async onRanks(@Ctx() ctx: Context): Promise<void> {
     const ranks = await this.rankService.getAllRanks();
     const list = ranks
-      .map(r => {
+      .map((r) => {
         const emoji = r.emoji ?? '🎖️';
         return `${emoji} ${r.name} (${String(r.minMessages)}+ сообщений)`;
       })

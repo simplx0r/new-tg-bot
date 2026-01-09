@@ -30,7 +30,9 @@ export class AdminUpdate {
     if (ctx.chat === undefined) {
       return;
     }
-    await this.adminService.updateSettings(ctx.chat.id, { jokesEnabled: false });
+    await this.adminService.updateSettings(ctx.chat.id, {
+      jokesEnabled: false,
+    });
     await ctx.reply('✅ Авто-шутки выключены');
   }
 
@@ -52,7 +54,9 @@ export class AdminUpdate {
       return;
     }
 
-    await this.adminService.updateSettings(ctx.chat.id, { jokesInterval: interval });
+    await this.adminService.updateSettings(ctx.chat.id, {
+      jokesInterval: interval,
+    });
     await ctx.reply(`✅ Интервал: ${String(interval)} мин.`);
   }
 
@@ -91,7 +95,9 @@ export class AdminUpdate {
       return;
     }
 
-    const list = admins.map((a, i) => `${String(i + 1)}. ID: ${String(a.telegramId)}`).join('\n');
+    const list = admins
+      .map((a, i) => `${String(i + 1)}. ID: ${String(a.telegramId)}`)
+      .join('\n');
     await ctx.reply(`👑 Админы:\n\n${list}`);
   }
 }

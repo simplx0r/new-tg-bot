@@ -1,8 +1,8 @@
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    Entity,
+    PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity('users')
@@ -10,16 +10,16 @@ export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ unique: true })
+  @Column({ type: 'integer', unique: true })
   telegramId!: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   firstName!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   lastName!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   username!: string | null;
 
   @CreateDateColumn()

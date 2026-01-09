@@ -1,8 +1,8 @@
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    Entity,
+    PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity('jokes')
@@ -13,10 +13,10 @@ export class Joke {
   @Column('text')
   content!: string;
 
-  @Column({ default: 'general' })
+  @Column({ type: 'text', default: 'general' })
   category!: string;
 
-  @Column({ default: 0 })
+  @Column({ type: 'integer', default: 0 })
   usedCount!: number;
 
   @CreateDateColumn()

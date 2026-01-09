@@ -4,30 +4,47 @@ import { Repository } from 'typeorm';
 import { MessageStats, Rank, User } from '../../database/entities';
 
 const DEFAULT_RANKS = [
-  { name: 'Новичок', emoji: '🌱', minMessages: 0, description: 'Только начал' },
   {
-    name: 'Участник',
-    emoji: '👤',
+    name: 'Стажёр-Шпион',
+    emoji: '🐣',
+    minMessages: 0,
+    description: 'Только получил доступ',
+  },
+  {
+    name: 'Агент под прикрытием',
+    emoji: '🥸',
     minMessages: 10,
-    description: '10+ сообщений',
+    description: 'Уже на 2 созвонах',
   },
   {
-    name: 'Активист',
-    emoji: '⭐',
+    name: 'Двойной Агент',
+    emoji: '🕵️',
     minMessages: 50,
-    description: '50+ сообщений',
+    description: '2 работы, 1 VPN',
   },
   {
-    name: 'Ветеран',
-    emoji: '🏆',
+    name: 'Агент 007',
+    emoji: '🔫',
     minMessages: 100,
-    description: '100+ сообщений',
+    description: '0 PR, 0 тасок, 7 созвонов',
   },
   {
-    name: 'Легенда',
-    emoji: '👑',
+    name: 'Агент ФСБ',
+    emoji: '🦅',
+    minMessages: 250,
+    description: 'Федеральная Служба Багов',
+  },
+  {
+    name: 'Специальный Агент',
+    emoji: '⭐',
     minMessages: 500,
-    description: '500+ сообщений',
+    description: 'Работает везде и нигде',
+  },
+  {
+    name: 'Главный по Секретам',
+    emoji: '👑',
+    minMessages: 1000,
+    description: '5 работ, никто не знает',
   },
 ];
 

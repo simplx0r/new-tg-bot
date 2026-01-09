@@ -13,7 +13,7 @@ export class Admin {
   @Column({ unique: true })
   telegramId!: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'integer', nullable: true })
   addedBy!: number | null;
 
   @CreateDateColumn()

@@ -1,4 +1,9 @@
-import { Injectable, type CallHandler, type ExecutionContext, type NestInterceptor } from '@nestjs/common';
+import {
+  Injectable,
+  type CallHandler,
+  type ExecutionContext,
+  type NestInterceptor,
+} from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import type { Context } from 'telegraf';
@@ -14,7 +19,9 @@ export class LoggingInterceptor implements NestInterceptor {
 
     const now = Date.now();
     // eslint-disable-next-line no-console
-    console.log(`📥 [${handler}] User: ${username} (${String(userId)}) Chat: ${String(chatId)}`);
+    console.log(
+      `📥 [${handler}] User: ${username} (${String(userId)}) Chat: ${String(chatId)}`,
+    );
 
     return next.handle().pipe(
       tap(() => {

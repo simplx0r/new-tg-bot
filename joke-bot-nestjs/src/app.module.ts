@@ -6,6 +6,7 @@ import { AdminGuard } from './common/guards';
 import { LoggingInterceptor } from './common/interceptors';
 import { DatabaseModule } from './database/database.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { FunModule } from './modules/fun/fun.module';
 import { JokeModule } from './modules/joke/joke.module';
 import { RankModule } from './modules/rank/rank.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
@@ -22,6 +23,7 @@ import { TelegramModule } from './modules/telegram/telegram.module';
     StatsModule,
     RankModule,
     SchedulerModule,
+    FunModule,
   ],
   providers: [
     // Global Guard

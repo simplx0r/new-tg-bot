@@ -5,15 +5,15 @@ export class Rank {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ type: 'text' })
   name!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   emoji!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   description!: string | null;
 
-  @Column()
+  @Column({ type: 'integer' })
   minMessages!: number;
 }

@@ -1,4 +1,8 @@
-import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  type CanActivate,
+  type ExecutionContext,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Context } from 'telegraf';
 import { AdminService } from '../../modules/admin/admin.service';
@@ -12,12 +16,12 @@ export class AdminGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isAdminOnly = this.reflector.getAllAndOverride<boolean>(ADMIN_ONLY_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const isAdminOnly = this.reflector.getAllAndOverride<boolean>(
+      ADMIN_ONLY_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
-    if (isAdminOnly !== true) {
+    if (!isAdminOnly) {
       return true;
     }
 

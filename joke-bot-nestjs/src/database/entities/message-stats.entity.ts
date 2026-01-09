@@ -1,9 +1,9 @@
 import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
+    Column,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 
@@ -18,7 +18,7 @@ export class MessageStats {
   @Column()
   chatId!: number;
 
-  @Column({ default: 0 })
+  @Column({ type: 'integer', default: 0 })
   messageCount!: number;
 
   @ManyToOne(() => User)
