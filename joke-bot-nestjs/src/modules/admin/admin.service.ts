@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Admin, ChatSettings } from '../../database/entities';
+
+export const SETTINGS_UPDATED_EVENT = 'settings.updated';
+
+export interface SettingsUpdatedPayload {
+  chatId: number;
+  settings: ChatSettings;
+}
 
 @Injectable()
 export class AdminService {
@@ -10,6 +18,7 @@ export class AdminService {
     private readonly adminRepo: Repository<Admin>,
     @InjectRepository(ChatSettings)
     private readonly settingsRepo: Repository<ChatSettings>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async isAdmin(telegramId: number): Promise<boolean> {
@@ -48,6 +57,14 @@ export class AdminService {
   ): Promise<ChatSettings> {
     const settings = await this.getOrCreateSettings(chatId);
     Object.assign(settings, update);
-    return this.settingsRepo.save(settings);
+    const saved = await this.settingsRepo.save(settings);
+
+    // Emit event for scheduler to pick up
+    this.eventEmitter.emit(SETTINGS_UPDATED_EVENT, {
+      chatId,
+      settings: saved,
+    } satisfies SettingsUpdatedPayload);
+
+    return saved;
   }
 }

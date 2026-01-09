@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
-  Admin,
-  ChatSettings,
-  Joke,
-  MessageStats,
-  Rank,
-  User,
+    Achievement,
+    Admin,
+    ChatSettings,
+    Joke,
+    MessageStats,
+    Rank,
+    Sticker,
+    Topic,
+    User,
+    UserAchievement,
 } from './entities';
 
 @Module({
@@ -14,16 +18,31 @@ import {
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: 'data/bot.db',
-      entities: [User, Joke, MessageStats, Rank, ChatSettings, Admin],
+      entities: [
+        Achievement,
+        Admin,
+        ChatSettings,
+        Joke,
+        MessageStats,
+        Rank,
+        Sticker,
+        Topic,
+        User,
+        UserAchievement,
+      ],
       synchronize: true,
     }),
     TypeOrmModule.forFeature([
-      User,
+      Achievement,
+      Admin,
+      ChatSettings,
       Joke,
       MessageStats,
       Rank,
-      ChatSettings,
-      Admin,
+      Sticker,
+      Topic,
+      User,
+      UserAchievement,
     ]),
   ],
   exports: [TypeOrmModule],

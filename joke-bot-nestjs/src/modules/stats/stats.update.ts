@@ -1,19 +1,129 @@
 import { Command, Ctx, On, Update } from 'nestjs-telegraf';
-import type { Context } from 'telegraf';
+import type { Context, NarrowedContext } from 'telegraf';
+import type { Update as TelegramUpdate } from 'telegraf/types';
+import { AdminService } from '../admin/admin.service';
+import { JokeService } from '../joke/joke.service';
+import { TopicService } from '../topic/topic.service';
+import { XP_REWARDS, XpService } from '../xp/xp.service';
 import { StatsService } from './stats.service';
+
+type MessageContext = NarrowedContext<Context, TelegramUpdate.MessageUpdate>;
 
 @Update()
 export class StatsUpdate {
-  constructor(private readonly statsService: StatsService) {}
+  constructor(
+    private readonly statsService: StatsService,
+    private readonly topicService: TopicService,
+    private readonly jokeService: JokeService,
+    private readonly adminService: AdminService,
+    private readonly xpService: XpService,
+  ) {}
 
   @On('message')
-  async onMessage(@Ctx() ctx: Context): Promise<void> {
+  async onMessage(@Ctx() ctx: MessageContext): Promise<void> {
     if (ctx.from === undefined || ctx.chat === undefined) {
       return;
     }
 
+    // Record user stats
     const user = await this.statsService.getOrCreateUser(ctx.from);
-    await this.statsService.recordMessage(user.id, ctx.chat.id);
+    const stats = await this.statsService.recordMessage(user.id, ctx.chat.id);
+
+    // ─────────────────────────────────────────────────────────────
+    // XP TRACKING
+    // ─────────────────────────────────────────────────────────────
+
+    // Give XP for message
+    const xpResult = await this.xpService.addXp(
+      user,
+      ctx.chat.id,
+      XP_REWARDS.message,
+      'message',
+    );
+
+    // Check for level up notification
+    if (xpResult.leveledUp && xpResult.newLevel !== undefined) {
+      await ctx.reply(
+        `🎉 *Поздравляем!* Вы достигли уровня *${String(xpResult.newLevel)}*! (+${String(XP_REWARDS.rank_up)} бонусных XP)`,
+        { parse_mode: 'Markdown' },
+      );
+    }
+
+    // Check achievements based on message count
+    const messageCount = stats.messageCount;
+    if (messageCount === 1) {
+      const achievement = await this.xpService.tryUnlockAchievement(user, ctx.chat.id, 'first_message');
+      if (achievement !== null) {
+        await ctx.reply(`🏆 Достижение получено: ${achievement.emoji} *${achievement.name}*`, {
+          parse_mode: 'Markdown',
+        });
+      }
+    }
+    if (messageCount === 10) {
+      const achievement = await this.xpService.tryUnlockAchievement(user, ctx.chat.id, 'chatterbox_10');
+      if (achievement !== null) {
+        await ctx.reply(`🏆 Достижение получено: ${achievement.emoji} *${achievement.name}*`, {
+          parse_mode: 'Markdown',
+        });
+      }
+    }
+    if (messageCount === 100) {
+      const achievement = await this.xpService.tryUnlockAchievement(user, ctx.chat.id, 'chatterbox_100');
+      if (achievement !== null) {
+        await ctx.reply(`🏆 Достижение получено: ${achievement.emoji} *${achievement.name}*`, {
+          parse_mode: 'Markdown',
+        });
+      }
+    }
+    if (messageCount === 1000) {
+      const achievement = await this.xpService.tryUnlockAchievement(user, ctx.chat.id, 'chatterbox_1000');
+      if (achievement !== null) {
+        await ctx.reply(`🏆 Достижение получено: ${achievement.emoji} *${achievement.name}*`, {
+          parse_mode: 'Markdown',
+        });
+      }
+    }
+
+    // Check time-based achievements (night owl / early bird)
+    const hour = new Date().getHours();
+    if (hour >= 2 && hour < 5) {
+      const achievement = await this.xpService.tryUnlockAchievement(user, ctx.chat.id, 'night_owl');
+      if (achievement !== null) {
+        await ctx.reply(`🏆 Достижение получено: ${achievement.emoji} *${achievement.name}*`, {
+          parse_mode: 'Markdown',
+        });
+      }
+    }
+    if (hour >= 5 && hour < 7) {
+      const achievement = await this.xpService.tryUnlockAchievement(user, ctx.chat.id, 'early_bird');
+      if (achievement !== null) {
+        await ctx.reply(`🏆 Достижение получено: ${achievement.emoji} *${achievement.name}*`, {
+          parse_mode: 'Markdown',
+        });
+      }
+    }
+
+    // Track topic if in forum
+    const threadId = ctx.message.message_thread_id;
+    if (threadId !== undefined) {
+      await this.topicService.registerTopic(ctx.chat.id, threadId);
+    }
+
+    // Random reply logic
+    const settings = await this.adminService.getOrCreateSettings(ctx.chat.id);
+    if (
+      settings.jokesEnabled &&
+      settings.replyChance > 0 &&
+      Math.random() * 100 < settings.replyChance
+    ) {
+      const joke = await this.jokeService.getRandomJoke();
+      if (joke !== null) {
+        await this.jokeService.incrementUsage(joke);
+        await ctx.reply(`😂 ${joke.content}`, {
+          reply_parameters: { message_id: ctx.message.message_id },
+        });
+      }
+    }
   }
 
   @Command('stats')

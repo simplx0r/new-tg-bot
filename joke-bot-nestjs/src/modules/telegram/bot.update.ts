@@ -33,10 +33,14 @@ export class BotUpdate {
         '🎱 /8ball — магический шар\n' +
         '📡 /status — статус агента\n\n' +
         '*Админ:*\n' +
-        '/jokeson — вкл авто-шутки\n' +
-        '/jokesoff — выкл авто-шутки',
+        '/jokeson · /jokesoff — авто-шутки\n' +
+        '/stickerson · /stickersoff — стикеры\n' +
+        '/addsticker — добавить стикер\n' +
+        '/interval [мин] — интервал\n' +
+        '/replychance [%] — шанс ответа\n' +
+        '/mode [jokes|stickers|mixed]\n' +
+        '/settings — текущие настройки',
       { parse_mode: 'Markdown' },
     );
   }
 }
-

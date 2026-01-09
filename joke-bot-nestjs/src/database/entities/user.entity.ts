@@ -25,6 +25,12 @@ export class User {
   @CreateDateColumn()
   createdAt!: Date;
 
+  @Column({ type: 'integer', default: 0 })
+  xpTotal!: number;
+
+  @Column({ type: 'integer', default: 1 })
+  level!: number;
+
   get displayName(): string {
     if (this.firstName !== null && this.lastName !== null) {
       return `${this.firstName} ${this.lastName}`;

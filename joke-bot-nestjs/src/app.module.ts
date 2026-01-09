@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TelegramExceptionFilter } from './common/filters';
 import { AdminGuard } from './common/guards';
 import { LoggingInterceptor } from './common/interceptors';
@@ -12,10 +13,12 @@ import { RankModule } from './modules/rank/rank.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { TelegramModule } from './modules/telegram/telegram.module';
+import { XpModule } from './modules/xp/xp.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    EventEmitterModule.forRoot(),
     DatabaseModule,
     AdminModule,
     TelegramModule,
@@ -24,6 +27,7 @@ import { TelegramModule } from './modules/telegram/telegram.module';
     RankModule,
     SchedulerModule,
     FunModule,
+    XpModule,
   ],
   providers: [
     // Global Guard
