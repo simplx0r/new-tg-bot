@@ -3,6 +3,7 @@ import type { Context, NarrowedContext } from 'telegraf';
 import type { Update as TelegramUpdate } from 'telegraf/types';
 import { AdminService } from '../admin/admin.service';
 import { JokeService } from '../joke/joke.service';
+import { StickerService } from '../sticker/sticker.service';
 import { TopicService } from '../topic/topic.service';
 import { XP_REWARDS, XpService } from '../xp/xp.service';
 import { StatsService } from './stats.service';
@@ -17,6 +18,7 @@ export class StatsUpdate {
     private readonly jokeService: JokeService,
     private readonly adminService: AdminService,
     private readonly xpService: XpService,
+    private readonly stickerService: StickerService,
   ) {}
 
   @On('message')
@@ -135,6 +137,23 @@ export class StatsUpdate {
       const contextualReply = findContextualResponse(messageText);
       if (contextualReply !== null) {
         await ctx.reply(contextualReply, {
+          reply_parameters: { message_id: ctx.message.message_id },
+        });
+        return;
+      }
+    }
+
+    // Fallback to random joke OR sticker based on mode
+    const shouldSendSticker =
+      settings.stickersEnabled &&
+      (settings.broadcastMode === 'stickers' ||
+        (settings.broadcastMode === 'mixed' && Math.random() > 0.5));
+
+    if (shouldSendSticker) {
+      const sticker = await this.stickerService.getRandomSticker();
+      if (sticker !== null) {
+        await this.stickerService.incrementUsage(sticker);
+        await ctx.replyWithSticker(sticker.fileId, {
           reply_parameters: { message_id: ctx.message.message_id },
         });
         return;
