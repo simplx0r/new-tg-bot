@@ -47,6 +47,12 @@ export class AdminService {
     if (settings === null) {
       settings = this.settingsRepo.create({ chatId });
       await this.settingsRepo.save(settings);
+
+      // NEW CHAT! Emit event so scheduler starts working immediately
+      this.eventEmitter.emit(SETTINGS_UPDATED_EVENT, {
+        chatId,
+        settings,
+      } satisfies SettingsUpdatedPayload);
     }
     return settings;
   }
