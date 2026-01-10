@@ -109,20 +109,45 @@ export class StatsUpdate {
       await this.topicService.registerTopic(ctx.chat.id, threadId);
     }
 
-    // Random reply logic
+    // ─────────────────────────────────────────────────────────────
+    // RANDOM/CONTEXTUAL REPLY LOGIC
+    // ─────────────────────────────────────────────────────────────
     const settings = await this.adminService.getOrCreateSettings(ctx.chat.id);
+
+    // Skip if disabled or didn't pass the random check
     if (
-      settings.jokesEnabled &&
-      settings.replyChance > 0 &&
-      Math.random() * 100 < settings.replyChance
+      !settings.jokesEnabled ||
+      settings.replyChance <= 0 ||
+      Math.random() * 100 >= settings.replyChance
     ) {
-      const joke = await this.jokeService.getRandomJoke();
-      if (joke !== null) {
-        await this.jokeService.incrementUsage(joke);
-        await ctx.reply(`😂 ${joke.content}`, {
+      return;
+    }
+
+    // Import trigger system (lazy to avoid circular deps)
+    const { findContextualResponse } = await import('../../common/triggers');
+
+    // Extract text from message
+    const messageText =
+      'text' in ctx.message ? ctx.message.text : undefined;
+
+    // Try contextual response first
+    if (messageText !== undefined) {
+      const contextualReply = findContextualResponse(messageText);
+      if (contextualReply !== null) {
+        await ctx.reply(contextualReply, {
           reply_parameters: { message_id: ctx.message.message_id },
         });
+        return;
       }
+    }
+
+    // Fallback to random joke
+    const joke = await this.jokeService.getRandomJoke();
+    if (joke !== null) {
+      await this.jokeService.incrementUsage(joke);
+      await ctx.reply(`😂 ${joke.content}`, {
+        reply_parameters: { message_id: ctx.message.message_id },
+      });
     }
   }
 

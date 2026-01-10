@@ -1,16 +1,16 @@
 import {
-    Injectable,
-    Logger,
-    type OnModuleDestroy,
-    type OnModuleInit,
+  Injectable,
+  Logger,
+  type OnModuleDestroy,
+  type OnModuleInit,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectBot } from 'nestjs-telegraf';
 import type { Telegraf } from 'telegraf';
 import {
-    AdminService,
-    SETTINGS_UPDATED_EVENT,
-    type SettingsUpdatedPayload,
+  AdminService,
+  SETTINGS_UPDATED_EVENT,
+  type SettingsUpdatedPayload,
 } from '../admin/admin.service';
 import { JokeService } from '../joke/joke.service';
 import { StickerService } from '../sticker/sticker.service';
@@ -32,17 +32,20 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   /**
-   * On startup, schedule broadcasts for all known chats based on their settings
+   * On startup, schedule broadcasts for all known chats with enabled settings
+   * Uses ChatSettings table (not Topics) to discover chats reliably
    */
   async onModuleInit(): Promise<void> {
     this.logger.log('🚀 Initializing dynamic scheduler...');
-    const chatIds = await this.topicService.getAllChats();
+
+    // Get all chats that have broadcasts enabled
+    const chatIds = await this.adminService.getAllEnabledChats();
 
     for (const chatId of chatIds) {
       await this.scheduleForChat(chatId);
     }
 
-    this.logger.log(`✅ Scheduled ${String(chatIds.length)} chats`);
+    this.logger.log(`✅ Scheduled ${String(chatIds.length)} chats with enabled broadcasts`);
   }
 
   /**

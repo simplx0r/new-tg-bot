@@ -165,8 +165,18 @@ export class AdminUpdate {
   }
 
   // ─────────────────────────────────────────────────────────────
-  //  LEGACY COMMANDS — Still work for backwards compatibility
+  //  LEGACY COMMANDS — For quick toggle via text commands
   // ─────────────────────────────────────────────────────────────
+
+  @Command('jokesoff')
+  @AdminOnly()
+  async onJokesOff(@Ctx() ctx: Context): Promise<void> {
+    if (ctx.chat === undefined) {
+      return;
+    }
+    await this.adminService.updateSettings(ctx.chat.id, { jokesEnabled: false });
+    await ctx.reply('✅ Авто-шутки выключены. Включить: /jokeson');
+  }
 
   @Command('jokeson')
   @AdminOnly()
@@ -178,14 +188,14 @@ export class AdminUpdate {
     await ctx.reply('✅ Авто-шутки включены');
   }
 
-  @Command('jokesoff')
+  @Command('stickersoff')
   @AdminOnly()
-  async onJokesOff(@Ctx() ctx: Context): Promise<void> {
+  async onStickersOff(@Ctx() ctx: Context): Promise<void> {
     if (ctx.chat === undefined) {
       return;
     }
-    await this.adminService.updateSettings(ctx.chat.id, { jokesEnabled: false });
-    await ctx.reply('✅ Авто-шутки выключены');
+    await this.adminService.updateSettings(ctx.chat.id, { stickersEnabled: false });
+    await ctx.reply('✅ Стикеры выключены. Включить: /stickerson');
   }
 
   @Command('stickerson')
@@ -196,16 +206,6 @@ export class AdminUpdate {
     }
     await this.adminService.updateSettings(ctx.chat.id, { stickersEnabled: true });
     await ctx.reply('✅ Стикеры включены');
-  }
-
-  @Command('stickersoff')
-  @AdminOnly()
-  async onStickersOff(@Ctx() ctx: Context): Promise<void> {
-    if (ctx.chat === undefined) {
-      return;
-    }
-    await this.adminService.updateSettings(ctx.chat.id, { stickersEnabled: false });
-    await ctx.reply('✅ Стикеры выключены');
   }
 
   @Command('addsticker')

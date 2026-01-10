@@ -67,4 +67,25 @@ export class AdminService {
 
     return saved;
   }
+
+  /**
+   * Get all chats that have any broadcasts enabled
+   */
+  async getAllEnabledChats(): Promise<number[]> {
+    const settings = await this.settingsRepo.find({
+      where: [
+        { jokesEnabled: true },
+        { stickersEnabled: true },
+      ],
+    });
+    return settings.map((s) => s.chatId);
+  }
+
+  /**
+   * Get all known chat IDs (for scheduler startup)
+   */
+  async getAllChatIds(): Promise<number[]> {
+    const settings = await this.settingsRepo.find();
+    return settings.map((s) => s.chatId);
+  }
 }
