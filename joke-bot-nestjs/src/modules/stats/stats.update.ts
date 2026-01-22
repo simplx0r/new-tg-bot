@@ -144,10 +144,11 @@ export class StatsUpdate {
     }
 
     // Fallback to random joke OR sticker based on mode
+    // mixed = fair coin flip between joke and sticker
     const shouldSendSticker =
       settings.stickersEnabled &&
       (settings.broadcastMode === 'stickers' ||
-        (settings.broadcastMode === 'mixed' && Math.random() > 0.5));
+        (settings.broadcastMode === 'mixed' && Math.random() < 0.5));
 
     if (shouldSendSticker) {
       const sticker = await this.stickerService.getRandomSticker();
@@ -158,6 +159,8 @@ export class StatsUpdate {
         });
         return;
       }
+      // In stickers-only mode, don't fallback to joke
+      if (settings.broadcastMode === 'stickers') return;
     }
 
     // Fallback to random joke

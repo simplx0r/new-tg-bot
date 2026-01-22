@@ -155,14 +155,16 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
     threadId: number | undefined,
     mode: string,
   ): Promise<void> {
-    const sendJoke = mode === 'jokes' || mode === 'mixed';
-    const sendSticker =
-      mode === 'stickers' || (mode === 'mixed' && Math.random() > 0.5);
-
     const threadOpts =
       threadId !== undefined ? { message_thread_id: threadId } : {};
 
-    if (sendSticker) {
+    // Determine what to send based on mode
+    // mixed = fair coin flip between joke and sticker
+    const shouldTrySticker =
+      mode === 'stickers' || (mode === 'mixed' && Math.random() < 0.5);
+    const shouldTryJoke = mode === 'jokes' || mode === 'mixed';
+
+    if (shouldTrySticker) {
       const sticker = await this.stickerService.getRandomSticker();
       if (sticker !== null) {
         await this.bot.telegram.sendSticker(chatId, sticker.fileId, threadOpts);
@@ -172,9 +174,11 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
         );
         return;
       }
+      // Sticker mode but no stickers — fallback to joke if mixed
+      if (mode === 'stickers') return;
     }
 
-    if (sendJoke) {
+    if (shouldTryJoke) {
       const joke = await this.jokeService.getRandomJoke();
       if (joke !== null) {
         await this.bot.telegram.sendMessage(

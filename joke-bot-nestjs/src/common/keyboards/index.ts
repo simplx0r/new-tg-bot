@@ -17,7 +17,7 @@ export function settingsKeyboard(s: ChatSettings) {
       ),
     ],
     [
-      Markup.button.callback(`⏰ Интервал: ${s.jokesInterval}м`, 'set_interval'),
+      Markup.button.callback(`⏰ Интервал: ${s.jokesInterval >= 60 ? `${s.jokesInterval / 60}ч` : `${s.jokesInterval}м`}`, 'set_interval'),
       Markup.button.callback(`💬 Ответы: ${s.replyChance}%`, 'set_replychance'),
     ],
     [
@@ -47,14 +47,14 @@ export function modeKeyboard() {
 export function intervalKeyboard() {
   return Markup.inlineKeyboard([
     [
-      Markup.button.callback('5м', 'interval_5'),
-      Markup.button.callback('15м', 'interval_15'),
-      Markup.button.callback('30м', 'interval_30'),
+      Markup.button.callback('1ч', 'interval_60'),
+      Markup.button.callback('2ч', 'interval_120'),
+      Markup.button.callback('4ч', 'interval_240'),
     ],
     [
-      Markup.button.callback('60м', 'interval_60'),
-      Markup.button.callback('120м', 'interval_120'),
-      Markup.button.callback('240м', 'interval_240'),
+      Markup.button.callback('6ч', 'interval_360'),
+      Markup.button.callback('12ч', 'interval_720'),
+      Markup.button.callback('24ч', 'interval_1440'),
     ],
     [Markup.button.callback('« Назад', 'back_to_settings')],
   ]);
